@@ -639,7 +639,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
         const dpr = Math.min(2, window.devicePixelRatio || 1);
         let w = 0;
         let h = 0;
-        const COUNT = 28;
+        const COUNT = 50;
         const COLOR = '#ff2d8d';
         const LINK_DIST = 80;
 
@@ -812,9 +812,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
             const uy = rocketExt.vy / speed;
             const perpX = -uy;
             const perpY = ux;
-            // Stochastic spawn: only ~50% of frames spawn a single particle —
-            // keeps trail breathy and total count manageable.
-            if (Math.random() >= 0.5) for (let n = 0; n < 1; n++) {
+            for (let n = 0; n < 2; n++) {
               // Make room if we're at the cap by evicting the particle closest to
               // natural expiry (lowest remaining TTL) rather than the oldest one,
               // so freshly-spawned exhaust isn't sacrificed prematurely.
