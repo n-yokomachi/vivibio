@@ -926,12 +926,22 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
                 p.ttl = 0;
               }
             }
-            // Render with fade-out near end of life
+            // Render: exhaust particles cool from magenta to cyan as they age,
+            // and fade out in the final FADE_FRAMES of their TTL.
             let alpha = 0.7;
-            if (p.ttl !== Infinity && p.ttl < FADE_FRAMES) {
-              alpha *= p.ttl / FADE_FRAMES;
+            let cr = 255, cg = 45, cb = 141; // magenta baseline
+            if (p.ttl !== Infinity) {
+              const age = 1 - p.ttl / p.maxTtl;
+              if (age > 0.4) {
+                const t = (age - 0.4) / 0.6;
+                const eased = t * t * (3 - 2 * t); // smoothstep
+                cr = Math.round(255 + (22 - 255) * eased);
+                cg = Math.round(45 + (240 - 45) * eased);
+                cb = Math.round(141 + (255 - 141) * eased);
+              }
+              if (p.ttl < FADE_FRAMES) alpha *= p.ttl / FADE_FRAMES;
             }
-            ctx.fillStyle = COLOR;
+            ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
             ctx.globalAlpha = alpha;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
