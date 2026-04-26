@@ -382,4 +382,86 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
     text-align: center;
     overflow-x: auto;
   }
+
+  /* Glitch shake animation */
+  @keyframes gl-shake {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-3px, 1px); }
+    50% { transform: translate(2px, -2px); }
+    75% { transform: translate(-1px, 2px); }
+  }
+  .gl-shake {
+    animation: gl-shake 0.18s steps(2) 1;
+  }
 </style>
+
+<script>
+  // Run only when Glitch theme is active (lazy init via observer)
+  function initGlitchEffects() {
+    // Already initialized?
+    if ((window as any).__glitchInited) return;
+    (window as any).__glitchInited = true;
+
+    // ----- Clock -----
+    const clockEl = document.querySelector<HTMLElement>('[data-glitch-clock]');
+    if (clockEl) {
+      const tick = () => {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        clockEl.textContent = `${hh}:${mm}:${ss}`;
+      };
+      tick();
+      setInterval(tick, 1000);
+    }
+
+    // ----- Typewriter -----
+    const tw = document.querySelector<HTMLElement>('[data-glitch-typewriter]');
+    if (tw) {
+      const text = tw.dataset.text ?? '';
+      let i = 0;
+      const speed = 35;
+      const pauseAtEnd = 2200;
+      const step = () => {
+        if (i <= text.length) {
+          tw.textContent = text.slice(0, i);
+          i++;
+          setTimeout(step, speed);
+        } else {
+          // Hold then restart
+          setTimeout(() => {
+            i = 0;
+            step();
+          }, pauseAtEnd);
+        }
+      };
+      step();
+    }
+
+    // ----- Periodic glitch shake on the name -----
+    const shakeEl = document.querySelector<HTMLElement>('[data-glitch-shake]');
+    if (shakeEl) {
+      setInterval(() => {
+        if (Math.random() > 0.5) {
+          shakeEl.classList.add('gl-shake');
+          setTimeout(() => shakeEl.classList.remove('gl-shake'), 200);
+        }
+      }, 1800);
+    }
+  }
+
+  // Run on initial load if already on Glitch theme, otherwise wait
+  if (document.documentElement.dataset.theme === 'glitch') {
+    initGlitchEffects();
+  } else {
+    // Watch for theme changes; init once Glitch becomes active
+    const observer = new MutationObserver(() => {
+      if (document.documentElement.dataset.theme === 'glitch') {
+        initGlitchEffects();
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+</script>
