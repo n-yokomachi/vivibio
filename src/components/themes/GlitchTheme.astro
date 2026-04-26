@@ -842,7 +842,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
               const py = rocketExt.y - uy * back + perpY * side;
               // Skip spawns that land too far off-canvas — they'd be invisible
               if (px < -40 || px > w + 40 || py < -40 || py > h + 40) continue;
-              const maxTtl = 1500 + Math.floor(Math.random() * 900); // 25–40 s @60fps
+              const maxTtl = 1080 + Math.floor(Math.random() * 600); // 18–28 s @60fps
               particles.push({
                 x: px,
                 y: py,
