@@ -15,7 +15,6 @@ const {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <meta name="theme-color" content="#f7f6f3" />
     <meta name="description" content={description} />
     <title>{title}</title>
 
@@ -24,7 +23,7 @@ const {
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;700;900&display=swap"
       rel="stylesheet"
     />
 
@@ -32,6 +31,25 @@ const {
     <meta property="og:description" content={description} />
     <meta property="og:type" content="profile" />
     <meta name="twitter:card" content="summary" />
+
+    <script is:inline>
+      (function () {
+        try {
+          var hash = location.hash.slice(1);
+          var stored = localStorage.getItem('vivibio-theme');
+          var allowed = ['minimal', 'glitch'];
+          var theme =
+            allowed.indexOf(hash) >= 0
+              ? hash
+              : allowed.indexOf(stored) >= 0
+                ? stored
+                : 'minimal';
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          document.documentElement.dataset.theme = 'minimal';
+        }
+      })();
+    </script>
   </head>
   <body>
     <slot />
@@ -47,20 +65,34 @@ const {
         margin: 0;
         padding: 0;
         min-height: 100%;
-        background: #f7f6f3;
-        color: #1a1a1a;
       }
       html {
         overflow-x: hidden;
       }
-      body {
+      :root[data-theme='minimal'] body {
+        background: #f7f6f3;
+        color: #1a1a1a;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      }
+      :root[data-theme='glitch'] body {
+        background: #07010d;
+        color: #fff;
+        font-family: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      body {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         overscroll-behavior-y: none;
       }
       a {
         color: inherit;
+      }
+      .theme-pane {
+        display: none;
+      }
+      :root[data-theme='minimal'] .theme-pane[data-theme='minimal'],
+      :root[data-theme='glitch'] .theme-pane[data-theme='glitch'] {
+        display: block;
       }
     </style>
   </body>
