@@ -105,3 +105,72 @@ const themes = [
     transform: translateX(0);
   }
 </style>
+
+<script>
+  const ALLOWED = ['minimal', 'glitch'] as const;
+  type ThemeId = (typeof ALLOWED)[number];
+
+  const root = document.documentElement;
+  const ts = document.querySelector<HTMLElement>('.ts');
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.ts-btn');
+
+  function isAllowed(v: string | null): v is ThemeId {
+    return v !== null && (ALLOWED as readonly string[]).includes(v);
+  }
+
+  function applyTheme(id: ThemeId, opts: { persist?: boolean } = { persist: true }) {
+    root.dataset.theme = id;
+    if (opts.persist !== false) {
+      try {
+        localStorage.setItem('vivibio-theme', id);
+      } catch (e) {
+        /* ignore */
+      }
+    }
+    buttons.forEach((b) => {
+      b.setAttribute('aria-current', b.dataset.themeTarget === id ? 'true' : 'false');
+    });
+  }
+
+  // Initialize aria-current from current theme (set by inline script in BaseLayout)
+  const initial = isAllowed(root.dataset.theme ?? null) ? (root.dataset.theme as ThemeId) : 'minimal';
+  applyTheme(initial, { persist: false });
+
+  // Click handler — switch theme via hash
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.themeTarget;
+      if (!isAllowed(target ?? null)) return;
+      location.hash = '#' + target;
+      // hashchange will fire and update everything; also close mobile menu
+      if (ts) ts.dataset.open = 'false';
+    });
+  });
+
+  // hashchange listener
+  window.addEventListener('hashchange', () => {
+    const hash = location.hash.slice(1);
+    if (isAllowed(hash)) applyTheme(hash);
+  });
+
+  // Mobile: tap-anywhere on the switcher toggles open/closed
+  if (ts) {
+    ts.addEventListener('click', (e) => {
+      if (window.matchMedia('(hover: hover)').matches) return; // desktop uses hover
+      const target = e.target as HTMLElement;
+      // If user tapped on a button, the click handler above runs; here we only handle non-button area
+      if (target.closest('.ts-btn')) return;
+      ts.dataset.open = ts.dataset.open === 'true' ? 'false' : 'true';
+    });
+  }
+
+  // Close menu on outside tap (mobile) and on ESC
+  document.addEventListener('click', (e) => {
+    if (!ts) return;
+    if (window.matchMedia('(hover: hover)').matches) return;
+    if (!ts.contains(e.target as Node)) ts.dataset.open = 'false';
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && ts) ts.dataset.open = 'false';
+  });
+</script>
