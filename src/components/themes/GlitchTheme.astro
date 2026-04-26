@@ -192,10 +192,12 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
     color: #fff;
     font-family: 'Inter', 'Helvetica Neue', sans-serif;
   }
-  /* Generic glitch text — RGB shift driven by --gl-shift-x/y/skew CSS vars */
+  /* Generic glitch text — RGB shift driven by --gl-shift-x/y/skew CSS vars
+     Per-element --shift-mult lets headings tone the wobble down for legibility. */
   .gl-glitch-text {
     position: relative;
     display: inline-block;
+    --shift-mult: 1;
   }
   .gl-glitch-text::before,
   .gl-glitch-text::after {
@@ -210,13 +212,23 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
   }
   .gl-glitch-text::before {
     color: #ff2d8d;
-    transform: translate(var(--gl-shift-x, -3px), var(--gl-shift-y, 1px))
-      skewX(calc(var(--gl-skew, 0deg) * -1));
+    transform: translate(
+        calc(var(--gl-shift-x, -3px) * var(--shift-mult)),
+        calc(var(--gl-shift-y, 1px) * var(--shift-mult))
+      )
+      skewX(calc(var(--gl-skew, 0deg) * var(--shift-mult) * -1));
   }
   .gl-glitch-text::after {
     color: #16f0ff;
-    transform: translate(calc(var(--gl-shift-x, -3px) * -1), calc(var(--gl-shift-y, 1px) * -1))
-      skewX(var(--gl-skew, 0deg));
+    transform: translate(
+        calc(var(--gl-shift-x, -3px) * var(--shift-mult) * -1),
+        calc(var(--gl-shift-y, 1px) * var(--shift-mult) * -1)
+      )
+      skewX(calc(var(--gl-skew, 0deg) * var(--shift-mult)));
+  }
+  /* Tone the wobble down for headings so titles stay readable */
+  .gl-h2 .gl-glitch-text {
+    --shift-mult: 0.45;
   }
 
   .gl-line {
@@ -483,7 +495,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       setInterval(tick, 1000);
     }
 
-    // ----- MHz random scanner (XXX.X MHz, swaps fast for radio-tuning vibe) -----
+    // ----- MHz random scanner (XXX.X format, very fast) -----
     const mhzEl = document.querySelector<HTMLElement>('[data-glitch-mhz]');
     if (mhzEl) {
       const updateMhz = () => {
@@ -492,7 +504,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
         mhzEl.textContent = `${intPart}.${decPart}MHz`;
       };
       updateMhz();
-      setInterval(updateMhz, 110);
+      setInterval(updateMhz, 55);
     }
 
     // ----- Typewriter -----
@@ -604,8 +616,10 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
         const COLOR = '#ff2d8d';
         const LINK_DIST = 80;
 
-        type P = { x: number; y: number; vx: number; vy: number; r: number };
+        type P = { x: number; y: number; vx: number; vy: number; r: number; ttl: number; maxTtl: number };
         const particles: P[] = [];
+        const MAX_PARTICLES = 220;
+        const FADE_FRAMES = 90;
 
         type Rocket = { x: number; y: number; vx: number; active: boolean };
         const rocket: Rocket = { x: -100, y: 0, vx: 0, active: false };
@@ -629,6 +643,8 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
               vx: (Math.random() - 0.5) * 0.3,
               vy: (Math.random() - 0.5) * 0.3,
               r: Math.random() * 1.4 + 0.4,
+              ttl: Infinity, // base field lives forever
+              maxTtl: Infinity,
             });
           }
         }
@@ -639,14 +655,25 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
 
         function launchRocket() {
           rocketExt.active = true;
-          // Spawn just outside the bottom-right corner
-          rocketExt.x = w + 40;
-          rocketExt.y = h + 30;
-          // Travel toward the top-left at ~135deg with small variance
+          // Pick a spawn edge (0=top, 1=right, 2=bottom, 3=left), 40px outside the canvas
+          const side = Math.floor(Math.random() * 4);
+          let sx = 0;
+          let sy = 0;
+          if (side === 0) { sx = Math.random() * w; sy = -50; }
+          else if (side === 1) { sx = w + 50; sy = Math.random() * h; }
+          else if (side === 2) { sx = Math.random() * w; sy = h + 50; }
+          else { sx = -50; sy = Math.random() * h; }
+          rocketExt.x = sx;
+          rocketExt.y = sy;
+          // Aim somewhere near the opposite side with random offset for variety
+          const targetX = w - sx + (Math.random() - 0.5) * w * 0.5;
+          const targetY = h - sy + (Math.random() - 0.5) * h * 0.5;
+          const dx = targetX - sx;
+          const dy = targetY - sy;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
           const speed = 9 + Math.random() * 4;
-          const angle = Math.PI + Math.PI / 4 + (Math.random() - 0.5) * 0.4; // ≈ 225deg, heading up-left
-          rocketExt.vx = Math.cos(angle) * speed;
-          rocketExt.vy = Math.sin(angle) * speed;
+          rocketExt.vx = (dx / dist) * speed;
+          rocketExt.vy = (dy / dist) * speed;
         }
 
         function scheduleRocket() {
@@ -664,7 +691,8 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
           ctx.save();
           ctx.translate(rocketExt.x, rocketExt.y);
           ctx.rotate(angle);
-          // Dense flame trail in the rocket's local -x direction (i.e. behind it)
+
+          // ===== Flame trail behind rocket =====
           const FLAME_LEN = 36;
           for (let i = 0; i < FLAME_LEN; i++) {
             const t = i / FLAME_LEN;
@@ -679,7 +707,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
             ctx.arc(tx, ty, tr, 0, Math.PI * 2);
             ctx.fill();
           }
-          // Wide nozzle puff (bright core)
+          // Bright nozzle core
           for (let i = 0; i < 8; i++) {
             const tx = -2 + (Math.random() - 0.5) * 4;
             const ty = (Math.random() - 0.5) * 6;
@@ -689,18 +717,82 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
             ctx.arc(tx, ty, 1.5 + Math.random() * 2, 0, Math.PI * 2);
             ctx.fill();
           }
-          // Rocket body (drawn along positive x in local frame, so it points where it's heading)
+
+          // ===== Rocket body =====
           ctx.globalAlpha = 1;
-          ctx.fillStyle = '#16f0ff';
-          ctx.fillRect(0, -3, 14, 6);
+          // Aft fins (drawn first so body covers the inside edge)
+          ctx.fillStyle = '#ff2d8d';
+          // Top fin
           ctx.beginPath();
-          ctx.moveTo(14, -3);
-          ctx.lineTo(22, 0);
-          ctx.lineTo(14, 3);
+          ctx.moveTo(0, -3);
+          ctx.lineTo(-6, -7);
+          ctx.lineTo(4, -3);
+          ctx.closePath();
           ctx.fill();
+          // Bottom fin
+          ctx.beginPath();
+          ctx.moveTo(0, 3);
+          ctx.lineTo(-6, 7);
+          ctx.lineTo(4, 3);
+          ctx.closePath();
+          ctx.fill();
+          // Main body — capsule with cyan top, white belly
+          ctx.fillStyle = '#16f0ff';
+          ctx.fillRect(0, -3, 16, 6);
+          // Belly stripe
+          ctx.fillStyle = 'rgba(255,255,255,0.65)';
+          ctx.fillRect(0, 1, 16, 2);
+          // Nose cone
           ctx.fillStyle = '#fff';
-          ctx.fillRect(2, -1, 4, 2);
+          ctx.beginPath();
+          ctx.moveTo(16, -3);
+          ctx.lineTo(24, 0);
+          ctx.lineTo(16, 3);
+          ctx.closePath();
+          ctx.fill();
+          // Window/port
+          ctx.fillStyle = '#ffd200';
+          ctx.beginPath();
+          ctx.arc(11, -0.5, 1.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#07010d';
+          ctx.beginPath();
+          ctx.arc(11, -0.5, 0.7, 0, Math.PI * 2);
+          ctx.fill();
+          // Body band detail
+          ctx.fillStyle = 'rgba(7,1,13,0.5)';
+          ctx.fillRect(5, -3, 1, 6);
+
           ctx.restore();
+
+          // ===== Spawn persistent exhaust particles into the main field =====
+          if (particles.length < MAX_PARTICLES) {
+            const speed = Math.sqrt(rocketExt.vx * rocketExt.vx + rocketExt.vy * rocketExt.vy) || 1;
+            const ux = rocketExt.vx / speed;
+            const uy = rocketExt.vy / speed;
+            const perpX = -uy;
+            const perpY = ux;
+            for (let n = 0; n < 5; n++) {
+              if (particles.length >= MAX_PARTICLES) break;
+              const back = 14 + Math.random() * 10;
+              const side = (Math.random() - 0.5) * 7;
+              const px = rocketExt.x - ux * back + perpX * side;
+              const py = rocketExt.y - uy * back + perpY * side;
+              // Initial velocity: away from rocket axis (radial spread)
+              const radial = (Math.random() - 0.5) * 1.6;
+              const drift = -0.6 - Math.random() * 0.8;
+              const maxTtl = 360 + Math.floor(Math.random() * 240); // 6–10 s @60fps
+              particles.push({
+                x: px,
+                y: py,
+                vx: ux * drift + perpX * radial,
+                vy: uy * drift + perpY * radial,
+                r: Math.random() * 1.4 + 0.4,
+                ttl: maxTtl,
+                maxTtl,
+              });
+            }
+          }
         }
 
         let raf = 0;
@@ -712,11 +804,27 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
           if (rocketExt.active) {
             rocketExt.x += rocketExt.vx;
             rocketExt.y += rocketExt.vy;
-            if (rocketExt.x < -80 || rocketExt.y < -80) rocketExt.active = false;
+            if (
+              rocketExt.x < -100 ||
+              rocketExt.x > w + 100 ||
+              rocketExt.y < -100 ||
+              rocketExt.y > h + 100
+            ) {
+              rocketExt.active = false;
+            }
           }
 
-          // Update particles
-          for (const p of particles) {
+          // Update particles (reverse loop so we can splice expired ones)
+          for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            // TTL countdown for finite-life particles (rocket exhaust)
+            if (p.ttl !== Infinity) {
+              p.ttl--;
+              if (p.ttl <= 0) {
+                particles.splice(i, 1);
+                continue;
+              }
+            }
             // Rocket dispersion: push particles radially away from the rocket
             if (rocketExt.active) {
               const dx = p.x - rocketExt.x;
@@ -749,9 +857,13 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
             if (p.x > w) p.x -= w;
             if (p.y < 0) p.y += h;
             if (p.y > h) p.y -= h;
-            // Render
+            // Render with fade-out near end of life
+            let alpha = 0.7;
+            if (p.ttl !== Infinity && p.ttl < FADE_FRAMES) {
+              alpha *= p.ttl / FADE_FRAMES;
+            }
             ctx.fillStyle = COLOR;
-            ctx.globalAlpha = 0.7;
+            ctx.globalAlpha = alpha;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
             ctx.fill();
