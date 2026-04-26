@@ -671,13 +671,13 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
           const dx = targetX - sx;
           const dy = targetY - sy;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          const speed = 9 + Math.random() * 4;
+          const speed = 4.5 + Math.random() * 2.5; // slower travel — 4.5–7 px/frame
           rocketExt.vx = (dx / dist) * speed;
           rocketExt.vy = (dy / dist) * speed;
         }
 
         function scheduleRocket() {
-          const delay = 9000 + Math.random() * 11000; // 9–20 s between launches
+          const delay = 4500 + Math.random() * 4500; // 4.5–9 s between launches
           setTimeout(() => {
             if (!rocketExt.active) launchRocket();
             scheduleRocket();
@@ -766,27 +766,42 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
           ctx.restore();
 
           // ===== Spawn persistent exhaust particles into the main field =====
-          if (particles.length < MAX_PARTICLES) {
+          // Spawn in a V-cone behind the rocket: further back = wider lateral spread.
+          // Continuous spawn throughout flight — when at cap, evict the oldest
+          // exhaust particle (FIFO) so the rocket keeps emitting until off-screen.
+          {
             const speed = Math.sqrt(rocketExt.vx * rocketExt.vx + rocketExt.vy * rocketExt.vy) || 1;
             const ux = rocketExt.vx / speed;
             const uy = rocketExt.vy / speed;
             const perpX = -uy;
             const perpY = ux;
-            for (let n = 0; n < 5; n++) {
-              if (particles.length >= MAX_PARTICLES) break;
-              const back = 14 + Math.random() * 10;
-              const side = (Math.random() - 0.5) * 7;
+            for (let n = 0; n < 4; n++) {
+              // Make room if we're at the cap by evicting the oldest finite-TTL particle
+              if (particles.length >= MAX_PARTICLES) {
+                let evicted = false;
+                for (let i = 0; i < particles.length; i++) {
+                  if (particles[i].ttl !== Infinity) {
+                    particles.splice(i, 1);
+                    evicted = true;
+                    break;
+                  }
+                }
+                if (!evicted) break; // base field at cap (shouldn't happen) — bail
+              }
+              const back = 24 + Math.random() * 90;        // 24–114 px behind nozzle
+              const halfWidth = back * 0.22;               // V-cone half-width (~12°)
+              const side = (Math.random() - 0.5) * 2 * halfWidth;
+              const radialSign = side >= 0 ? 1 : -1;
+              const radial = 0.35 + Math.random() * 0.6;   // continued outward drift
+              const fwd = -0.25 - Math.random() * 0.35;    // slight backward drift in rocket frame
               const px = rocketExt.x - ux * back + perpX * side;
               const py = rocketExt.y - uy * back + perpY * side;
-              // Initial velocity: away from rocket axis (radial spread)
-              const radial = (Math.random() - 0.5) * 1.6;
-              const drift = -0.6 - Math.random() * 0.8;
               const maxTtl = 360 + Math.floor(Math.random() * 240); // 6–10 s @60fps
               particles.push({
                 x: px,
                 y: py,
-                vx: ux * drift + perpX * radial,
-                vy: uy * drift + perpY * radial,
+                vx: ux * fwd + perpX * radial * radialSign,
+                vy: uy * fwd + perpY * radial * radialSign,
                 r: Math.random() * 1.4 + 0.4,
                 ttl: maxTtl,
                 maxTtl,
@@ -853,10 +868,18 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
             // Integrate
             p.x += p.vx;
             p.y += p.vy;
-            if (p.x < 0) p.x += w;
-            if (p.x > w) p.x -= w;
-            if (p.y < 0) p.y += h;
-            if (p.y > h) p.y -= h;
+            if (p.ttl === Infinity) {
+              // Base field wraps toroidally so it always covers the canvas
+              if (p.x < 0) p.x += w;
+              if (p.x > w) p.x -= w;
+              if (p.y < 0) p.y += h;
+              if (p.y > h) p.y -= h;
+            } else {
+              // Exhaust particles fly off naturally — kill once well off-screen
+              if (p.x < -120 || p.x > w + 120 || p.y < -120 || p.y > h + 120) {
+                p.ttl = 0;
+              }
+            }
             // Render with fade-out near end of life
             let alpha = 0.7;
             if (p.ttl !== Infinity && p.ttl < FADE_FRAMES) {
@@ -869,11 +892,14 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
             ctx.fill();
           }
 
-          // Linking lines
+          // Linking lines — only between base-field particles, so exhaust dots
+          // don't form a noisy mesh during/after rocket bursts.
           ctx.strokeStyle = COLOR;
           ctx.lineWidth = 0.5;
           for (let i = 0; i < particles.length; i++) {
+            if (particles[i].ttl !== Infinity) continue;
             for (let j = i + 1; j < particles.length; j++) {
+              if (particles[j].ttl !== Infinity) continue;
               const dx = particles[i].x - particles[j].x;
               const dy = particles[i].y - particles[j].y;
               const d2 = dx * dx + dy * dy;
