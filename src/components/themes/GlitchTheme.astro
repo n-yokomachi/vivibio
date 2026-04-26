@@ -618,7 +618,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
 
         type P = { x: number; y: number; vx: number; vy: number; r: number; ttl: number; maxTtl: number };
         const particles: P[] = [];
-        const MAX_PARTICLES = 220;
+        const MAX_PARTICLES = 600;
         const FADE_FRAMES = 90;
 
         type Rocket = { x: number; y: number; vx: number; active: boolean };
@@ -796,7 +796,9 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
               const fwd = -0.25 - Math.random() * 0.35;    // slight backward drift in rocket frame
               const px = rocketExt.x - ux * back + perpX * side;
               const py = rocketExt.y - uy * back + perpY * side;
-              const maxTtl = 360 + Math.floor(Math.random() * 240); // 6–10 s @60fps
+              // Skip spawns that land too far off-canvas — they'd be invisible
+              if (px < -40 || px > w + 40 || py < -40 || py > h + 40) continue;
+              const maxTtl = 480 + Math.floor(Math.random() * 360); // 8–14 s @60fps
               particles.push({
                 x: px,
                 y: py,
