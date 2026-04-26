@@ -932,8 +932,8 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
             let cr = 255, cg = 45, cb = 141; // magenta baseline
             if (p.ttl !== Infinity) {
               const age = 1 - p.ttl / p.maxTtl;
-              if (age > 0.4) {
-                const t = (age - 0.4) / 0.6;
+              if (age > 0.15) {
+                const t = Math.min(1, (age - 0.15) / 0.45);
                 const eased = t * t * (3 - 2 * t); // smoothstep
                 cr = Math.round(255 + (22 - 255) * eased);
                 cg = Math.round(45 + (240 - 45) * eased);
