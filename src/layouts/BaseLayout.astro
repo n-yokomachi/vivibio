@@ -17,6 +17,7 @@ const {
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="description" content={description} />
     <title>{title}</title>
+    <meta name="theme-color" content="#f7f6f3" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
@@ -69,6 +70,14 @@ const {
       html {
         overflow-x: hidden;
       }
+
+      /* Fallback before data-theme attribute is set (no-JS / pre-script paint) */
+      body {
+        background: #f7f6f3;
+        color: #1a1a1a;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      }
+
       :root[data-theme='minimal'] body {
         background: #f7f6f3;
         color: #1a1a1a;
