@@ -687,8 +687,12 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
             scheduleRocket();
           }, delay);
         }
-        // Launch the first rocket right at startup, then schedule subsequent ones
-        launchRocket();
+        // Launch the first rocket right after the canvas has been measured
+        // (resize() runs after this block; without a small delay w/h are still 0
+        // and the launch direction collapses to the cardinal axes).
+        setTimeout(() => {
+          if (!rocketExt.active && w > 0 && h > 0) launchRocket();
+        }, 80);
         scheduleRocket();
 
         function drawRocket() {
