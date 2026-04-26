@@ -1,0 +1,30 @@
+---
+import TopBar from '../TopBar.astro';
+import Hero from '../Hero.astro';
+import Links from '../Links.astro';
+import Output from '../Output.astro';
+import Footer from '../Footer.astro';
+---
+
+<div class="mn">
+  <TopBar />
+  <Hero />
+  <Links />
+  <Output />
+  <Footer />
+</div>
+
+<style>
+  .mn {
+    min-height: 100dvh;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 28px 24px 64px;
+  }
+
+  @media (min-width: 768px) {
+    .mn {
+      padding: 40px 48px 80px;
+    }
+  }
+</style>

@@ -1,33 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import TopBar from '../components/TopBar.astro';
-import Hero from '../components/Hero.astro';
-import Links from '../components/Links.astro';
-import Output from '../components/Output.astro';
-import Footer from '../components/Footer.astro';
+import MinimalTheme from '../components/themes/MinimalTheme.astro';
 ---
 
 <BaseLayout>
-  <main class="mn">
-    <TopBar />
-    <Hero />
-    <Links />
-    <Output />
-    <Footer />
+  <main class="theme-pane" data-theme="minimal">
+    <MinimalTheme />
   </main>
 </BaseLayout>
-
-<style>
-  .mn {
-    min-height: 100dvh;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 28px 24px 64px;
-  }
-
-  @media (min-width: 768px) {
-    .mn {
-      padding: 40px 48px 80px;
-    }
-  }
-</style>
