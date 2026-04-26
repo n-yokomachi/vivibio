@@ -1,12 +1,16 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import MinimalTheme from '../components/themes/MinimalTheme.astro';
+import GlitchTheme from '../components/themes/GlitchTheme.astro';
 import ThemeSwitcher from '../components/ThemeSwitcher.astro';
 ---
 
 <BaseLayout>
   <main class="theme-pane" data-theme="minimal">
     <MinimalTheme />
+  </main>
+  <main class="theme-pane" data-theme="glitch">
+    <GlitchTheme />
   </main>
   <ThemeSwitcher />
 </BaseLayout>
