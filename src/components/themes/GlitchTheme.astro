@@ -449,6 +449,100 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
         }
       }, 1800);
     }
+
+    // ----- Particle canvas -----
+    const canvas = document.querySelector<HTMLCanvasElement>('.gl-particles');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        let w = 0;
+        let h = 0;
+        const COUNT = 50;
+        const COLOR = '#ff2d8d';
+        const LINK_DIST = 80;
+
+        type P = { x: number; y: number; vx: number; vy: number; r: number };
+        const particles: P[] = [];
+
+        function resize() {
+          if (!canvas || !ctx) return;
+          w = canvas.clientWidth;
+          h = canvas.clientHeight;
+          canvas.width = w * dpr;
+          canvas.height = h * dpr;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function spawn() {
+          particles.length = 0;
+          for (let i = 0; i < COUNT; i++) {
+            particles.push({
+              x: Math.random() * w,
+              y: Math.random() * h,
+              vx: (Math.random() - 0.5) * 0.3,
+              vy: (Math.random() - 0.5) * 0.3,
+              r: Math.random() * 1.4 + 0.4,
+            });
+          }
+        }
+
+        let raf = 0;
+        function tick() {
+          if (!ctx) return;
+          ctx.clearRect(0, 0, w, h);
+          for (const p of particles) {
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.x < 0) p.x += w;
+            if (p.x > w) p.x -= w;
+            if (p.y < 0) p.y += h;
+            if (p.y > h) p.y -= h;
+            ctx.fillStyle = COLOR;
+            ctx.globalAlpha = 0.7;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.strokeStyle = COLOR;
+          ctx.lineWidth = 0.5;
+          for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+              const dx = particles[i].x - particles[j].x;
+              const dy = particles[i].y - particles[j].y;
+              const d2 = dx * dx + dy * dy;
+              if (d2 < LINK_DIST * LINK_DIST) {
+                ctx.globalAlpha = 0.15 * (1 - Math.sqrt(d2) / LINK_DIST);
+                ctx.beginPath();
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+          raf = requestAnimationFrame(tick);
+        }
+
+        const ro = new ResizeObserver(() => {
+          resize();
+          spawn();
+        });
+        ro.observe(canvas);
+
+        resize();
+        spawn();
+        tick();
+
+        // Pause animation when tab is hidden to save CPU
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            cancelAnimationFrame(raf);
+          } else {
+            tick();
+          }
+        });
+      }
+    }
   }
 
   // Run on initial load if already on Glitch theme, otherwise wait
