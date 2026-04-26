@@ -671,7 +671,11 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
           const dx = targetX - sx;
           const dy = targetY - sy;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          const speed = 2.8 + Math.random() * 1.8; // slower travel — 2.8–4.6 px/frame
+          // Mobile viewports get a slower rocket so the cross-screen time feels similar
+          const isNarrow = w < 700;
+          const speed = isNarrow
+            ? 1.8 + Math.random() * 1.0   // 1.8–2.8 px/frame on mobile
+            : 2.8 + Math.random() * 1.8;  // 2.8–4.6 px/frame on desktop
           rocketExt.vx = (dx / dist) * speed;
           rocketExt.vy = (dy / dist) * speed;
         }
