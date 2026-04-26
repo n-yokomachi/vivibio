@@ -683,6 +683,8 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
             scheduleRocket();
           }, delay);
         }
+        // Launch the first rocket right at startup, then schedule subsequent ones
+        launchRocket();
         scheduleRocket();
 
         function drawRocket() {
