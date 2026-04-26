@@ -645,7 +645,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
 
         type P = { x: number; y: number; vx: number; vy: number; r: number; ttl: number; maxTtl: number };
         const particles: P[] = [];
-        const MAX_PARTICLES = 600;
+        const MAX_PARTICLES = 2000;
         const FADE_FRAMES = 90;
 
         type Rocket = { x: number; y: number; vx: number; active: boolean };
@@ -813,17 +813,24 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
             const perpX = -uy;
             const perpY = ux;
             for (let n = 0; n < 4; n++) {
-              // Make room if we're at the cap by evicting the oldest finite-TTL particle
+              // Make room if we're at the cap by evicting the particle closest to
+              // natural expiry (lowest remaining TTL) rather than the oldest one,
+              // so freshly-spawned exhaust isn't sacrificed prematurely.
               if (particles.length >= MAX_PARTICLES) {
-                let evicted = false;
+                let minTtl = Infinity;
+                let minIdx = -1;
                 for (let i = 0; i < particles.length; i++) {
-                  if (particles[i].ttl !== Infinity) {
-                    particles.splice(i, 1);
-                    evicted = true;
-                    break;
+                  const ttl = particles[i].ttl;
+                  if (ttl !== Infinity && ttl < minTtl) {
+                    minTtl = ttl;
+                    minIdx = i;
                   }
                 }
-                if (!evicted) break; // base field at cap (shouldn't happen) — bail
+                if (minIdx >= 0) {
+                  particles.splice(minIdx, 1);
+                } else {
+                  break; // only base field present — bail
+                }
               }
               const back = 24 + Math.random() * 90;        // 24–114 px behind nozzle
               const halfWidth = back * 0.22;               // V-cone half-width (~12°)
