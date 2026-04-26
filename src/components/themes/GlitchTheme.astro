@@ -812,7 +812,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
             const uy = rocketExt.vy / speed;
             const perpX = -uy;
             const perpY = ux;
-            for (let n = 0; n < 4; n++) {
+            for (let n = 0; n < 2; n++) {
               // Make room if we're at the cap by evicting the particle closest to
               // natural expiry (lowest remaining TTL) rather than the oldest one,
               // so freshly-spawned exhaust isn't sacrificed prematurely.
