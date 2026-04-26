@@ -25,7 +25,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       <span class="gl-tag">[ NFC ] HUMAN_DETECTED</span>
 
       <div class="gl-name-shake" data-glitch-shake>
-        <span class="gl-rgb" data-text={PROFILE.name}>{PROFILE.name}</span>
+        <span class="gl-rgb gl-glitch-text" data-text={PROFILE.name}>{PROFILE.name}</span>
       </div>
 
       <div class="gl-mono gl-line">
@@ -37,7 +37,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       </div>
 
       <div class="gl-stripe" data-glitch-stripe>
-        {stripeColors.map((c) => <i style={`background:${c}`}></i>)}
+        {stripeColors.map((c) => <i style={`--c:${c}`}></i>)}
       </div>
     </section>
 
@@ -46,7 +46,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       <div class="gl-bio-ja">{PROFILE.bioJa}</div>
     </section>
 
-    <h2 class="gl-h2"><span class="gl-h2-dot"></span>LINKS</h2>
+    <h2 class="gl-h2"><span class="gl-h2-dot"></span><span class="gl-glitch-text" data-text="LINKS">LINKS</span></h2>
     <div class="gl-links">
       {LINKS.map((l) => (
         <a
@@ -62,7 +62,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       ))}
     </div>
 
-    <h2 class="gl-h2"><span class="gl-h2-dot"></span>OUTPUT</h2>
+    <h2 class="gl-h2"><span class="gl-h2-dot"></span><span class="gl-glitch-text" data-text="OUTPUT">OUTPUT</span></h2>
     <div class="gl-output gl-card" data-tag="STREAM">
       {OUTPUTS.map((o) => (
         <a href={o.url} class="gl-output-row" target="_blank" rel="noopener noreferrer">
@@ -192,8 +192,13 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
     color: #fff;
     font-family: 'Inter', 'Helvetica Neue', sans-serif;
   }
-  .gl-rgb::before,
-  .gl-rgb::after {
+  /* Generic glitch text — RGB shift driven by --gl-shift-x/y/skew CSS vars */
+  .gl-glitch-text {
+    position: relative;
+    display: inline-block;
+  }
+  .gl-glitch-text::before,
+  .gl-glitch-text::after {
     content: attr(data-text);
     position: absolute;
     top: 0;
@@ -201,14 +206,17 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
     width: 100%;
     mix-blend-mode: screen;
     pointer-events: none;
+    will-change: transform;
   }
-  .gl-rgb::before {
+  .gl-glitch-text::before {
     color: #ff2d8d;
-    transform: translate(-3px, 1px);
+    transform: translate(var(--gl-shift-x, -3px), var(--gl-shift-y, 1px))
+      skewX(calc(var(--gl-skew, 0deg) * -1));
   }
-  .gl-rgb::after {
+  .gl-glitch-text::after {
     color: #16f0ff;
-    transform: translate(3px, -1px);
+    transform: translate(calc(var(--gl-shift-x, -3px) * -1), calc(var(--gl-shift-y, 1px) * -1))
+      skewX(var(--gl-skew, 0deg));
   }
 
   .gl-line {
@@ -241,12 +249,29 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
     margin-top: 22px;
     align-items: flex-end;
     height: 36px;
+    isolation: isolate;
   }
   .gl-stripe i {
     display: block;
     flex: 1;
-    height: 14px;
+    height: var(--h, 14px);
+    background: var(--c);
+    position: relative;
     will-change: height;
+    z-index: 1;
+  }
+  .gl-stripe i::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -2px;
+    right: -2px;
+    height: var(--gh, 14px);
+    background: var(--c);
+    filter: blur(4px);
+    opacity: 0.55;
+    z-index: -1;
+    pointer-events: none;
   }
 
   /* Cards */
@@ -477,15 +502,16 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       }, 1800);
     }
 
-    // ----- Audio-waveform stripe -----
+    // ----- Audio-waveform stripe with afterimage trail -----
     const stripe = document.querySelector<HTMLElement>('[data-glitch-stripe]');
     if (stripe) {
       const bars = Array.from(stripe.querySelectorAll<HTMLElement>('i'));
-      type Bar = { el: HTMLElement; current: number; target: number; speed: number };
+      type Bar = { el: HTMLElement; current: number; target: number; ghost: number; speed: number };
       const state: Bar[] = bars.map((el) => ({
         el,
         current: Math.random(),
         target: Math.random(),
+        ghost: Math.random(),
         speed: 0.05 + Math.random() * 0.08,
       }));
       const minH = 3;
@@ -493,14 +519,38 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       const animateBars = () => {
         for (const b of state) {
           b.current += (b.target - b.current) * b.speed;
+          // Ghost lags behind the leading bar to produce afterimage
+          b.ghost += (b.current - b.ghost) * b.speed * 0.4;
           if (Math.abs(b.current - b.target) < 0.04) {
             b.target = Math.random();
           }
-          b.el.style.height = `${minH + b.current * (maxH - minH)}px`;
+          const h = minH + b.current * (maxH - minH);
+          const gh = minH + b.ghost * (maxH - minH);
+          b.el.style.setProperty('--h', `${h.toFixed(2)}px`);
+          b.el.style.setProperty('--gh', `${gh.toFixed(2)}px`);
         }
         requestAnimationFrame(animateBars);
       };
       animateBars();
+    }
+
+    // ----- Glitch RGB-shift wobble (animates --gl-shift-x/y/skew on .gl) -----
+    const glContainer = document.querySelector<HTMLElement>('.gl');
+    if (glContainer) {
+      let glStart = 0;
+      const animateShift = (time: number) => {
+        if (glStart === 0) glStart = time;
+        const t = (time - glStart) / 1000;
+        // Two overlapping sine waves give an organic wobble that occasionally pulses
+        const x = Math.sin(t * 1.5) * 3 + Math.sin(t * 5.7) * 0.6;
+        const y = Math.cos(t * 1.1) * 1.4 + Math.sin(t * 3.3) * 0.4;
+        const skew = Math.sin(t * 0.6) * 0.6;
+        glContainer.style.setProperty('--gl-shift-x', `${x.toFixed(2)}px`);
+        glContainer.style.setProperty('--gl-shift-y', `${y.toFixed(2)}px`);
+        glContainer.style.setProperty('--gl-skew', `${skew.toFixed(2)}deg`);
+        requestAnimationFrame(animateShift);
+      };
+      requestAnimationFrame(animateShift);
     }
 
     // ----- Particle canvas -----
