@@ -1,0 +1,30 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="mn-foot">
+  <span class="brand mn-mono">vivibio</span>
+  <span class="mn-acc" aria-hidden="true">●</span>
+  <span class="mn-mono">©{year}</span>
+</footer>
+
+<style>
+  .mn-foot {
+    margin-top: 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: rgba(26, 26, 26, 0.4);
+    letter-spacing: 0.04em;
+  }
+  .brand {
+    font-weight: 500;
+  }
+  .mn-mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  .mn-acc {
+    color: #ff5733;
+  }
+</style>

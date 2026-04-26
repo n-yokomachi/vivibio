@@ -1,0 +1,117 @@
+---
+import { LINKS } from '../data/profile.ts';
+import LinkIcons from './icons/LinkIcons.astro';
+
+const count = String(LINKS.length).padStart(2, '0');
+---
+
+<section class="mn-section">
+  <div class="mn-section-h">
+    <h2>Links</h2>
+    <span class="count mn-mono">{count}</span>
+  </div>
+  <div class="mn-links">
+    {
+      LINKS.map((l) => (
+        <a
+          href={l.url}
+          class="mn-link"
+          title={`${l.label} · ${l.handle}`}
+          target={l.url.startsWith('mailto:') ? undefined : '_blank'}
+          rel={l.url.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+        >
+          <span class="ic">
+            <LinkIcons id={l.id} />
+          </span>
+          <span class="lab">{l.label}</span>
+        </a>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .mn-section {
+    margin-top: 44px;
+  }
+  .mn-section-h {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+  .mn-section-h h2 {
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin: 0;
+    color: rgba(26, 26, 26, 0.55);
+  }
+  .mn-section-h .count {
+    font-size: 11px;
+    color: rgba(26, 26, 26, 0.4);
+  }
+  .mn-mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  /* Default: icon-only mode (narrow viewport) */
+  .mn-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+    gap: 8px;
+  }
+  .mn-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1 / 1;
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(26, 26, 26, 0.1);
+    background: #fff;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    min-width: 0;
+  }
+  .mn-link:hover,
+  .mn-link:active {
+    border-color: rgba(26, 26, 26, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(26, 26, 26, 0.06);
+  }
+  .mn-link .ic {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    color: #1a1a1a;
+    display: grid;
+    place-items: center;
+  }
+  .mn-link .lab {
+    display: none;
+  }
+
+  /* Wide viewport: icon + label, with min-width that fits the longest label */
+  @media (min-width: 640px) {
+    .mn-links {
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    }
+    .mn-link {
+      justify-content: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      aspect-ratio: auto;
+    }
+    .mn-link .lab {
+      display: inline;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: -0.005em;
+      white-space: nowrap;
+      min-width: 0;
+    }
+  }
+</style>

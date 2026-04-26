@@ -1,0 +1,23 @@
+---
+import { PROFILE } from '../data/profile.ts';
+---
+
+<div class="mn-top">
+  <img class="av" src={PROFILE.avatarUrl} alt={`${PROFILE.name} avatar`} width="64" height="64" loading="eager" />
+</div>
+
+<style>
+  .mn-top {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .av {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #1a1a1a;
+    display: block;
+  }
+</style>

@@ -1,0 +1,89 @@
+---
+import { PROFILE } from '../data/profile.ts';
+---
+
+<section class="mn-hero">
+  <div class="mn-eye">— hello,</div>
+  <h1 class="mn-name">
+    I'm <span class="hl">{PROFILE.name}</span>.
+  </h1>
+  <p class="mn-title">{PROFILE.title}</p>
+  <p class="mn-sub">{PROFILE.bio}</p>
+  <p class="mn-sub-ja">{PROFILE.bioJa}</p>
+
+  <div class="mn-meta">
+    <div>
+      <b>Based in</b>
+      {PROFILE.location}
+    </div>
+    <div>
+      <b>Currently</b>
+      {PROFILE.currently}
+    </div>
+  </div>
+</section>
+
+<style>
+  .mn-hero {
+    padding: 56px 0 8px;
+  }
+  .mn-eye {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 26, 0.5);
+    font-weight: 500;
+  }
+  .mn-name {
+    font-size: clamp(40px, 11vw, 72px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-weight: 500;
+    margin: 12px 0 0;
+  }
+  .mn-name .hl {
+    color: #1a1a1a;
+  }
+  .mn-title {
+    font-size: clamp(16px, 3.2vw, 22px);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: rgba(26, 26, 26, 0.55);
+    font-style: italic;
+    font-weight: 400;
+    margin: 12px 0 0;
+  }
+  .mn-sub {
+    font-size: 17px;
+    line-height: 1.5;
+    color: rgba(26, 26, 26, 0.78);
+    margin-top: 22px;
+    max-width: 56ch;
+  }
+  .mn-sub-ja {
+    font-size: 13px;
+    color: rgba(26, 26, 26, 0.55);
+    margin-top: 8px;
+    line-height: 1.7;
+    max-width: 56ch;
+    word-break: auto-phrase;
+    line-break: strict;
+    text-wrap: pretty;
+  }
+  .mn-meta {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 26px;
+    font-size: 13px;
+  }
+  .mn-meta div b {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 26, 0.4);
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+</style>
