@@ -671,13 +671,13 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
           const dx = targetX - sx;
           const dy = targetY - sy;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          const speed = 4.5 + Math.random() * 2.5; // slower travel — 4.5–7 px/frame
+          const speed = 2.8 + Math.random() * 1.8; // slower travel — 2.8–4.6 px/frame
           rocketExt.vx = (dx / dist) * speed;
           rocketExt.vy = (dy / dist) * speed;
         }
 
         function scheduleRocket() {
-          const delay = 4500 + Math.random() * 4500; // 4.5–9 s between launches
+          const delay = 7000 + Math.random() * 6000; // 7–13 s between launches
           setTimeout(() => {
             if (!rocketExt.active) launchRocket();
             scheduleRocket();
