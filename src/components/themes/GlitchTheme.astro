@@ -36,8 +36,8 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
         <span data-glitch-typewriter data-text="SIGNAL_LOST · RECONNECTING · HUMAN_FOUND"></span><span class="gl-cursor"></span>
       </div>
 
-      <div class="gl-stripe">
-        {stripeColors.map((c, i) => <i style={`background:${c};height:${8 + (i % 3) * 6}px`}></i>)}
+      <div class="gl-stripe" data-glitch-stripe>
+        {stripeColors.map((c) => <i style={`background:${c}`}></i>)}
       </div>
     </section>
 
@@ -240,10 +240,13 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
     gap: 4px;
     margin-top: 22px;
     align-items: flex-end;
+    height: 36px;
   }
   .gl-stripe i {
     display: block;
     flex: 1;
+    height: 14px;
+    will-change: height;
   }
 
   /* Cards */
@@ -472,6 +475,32 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
           setTimeout(() => shakeEl.classList.remove('gl-shake'), 200);
         }
       }, 1800);
+    }
+
+    // ----- Audio-waveform stripe -----
+    const stripe = document.querySelector<HTMLElement>('[data-glitch-stripe]');
+    if (stripe) {
+      const bars = Array.from(stripe.querySelectorAll<HTMLElement>('i'));
+      type Bar = { el: HTMLElement; current: number; target: number; speed: number };
+      const state: Bar[] = bars.map((el) => ({
+        el,
+        current: Math.random(),
+        target: Math.random(),
+        speed: 0.05 + Math.random() * 0.08,
+      }));
+      const minH = 3;
+      const maxH = 32;
+      const animateBars = () => {
+        for (const b of state) {
+          b.current += (b.target - b.current) * b.speed;
+          if (Math.abs(b.current - b.target) < 0.04) {
+            b.target = Math.random();
+          }
+          b.el.style.height = `${minH + b.current * (maxH - minH)}px`;
+        }
+        requestAnimationFrame(animateBars);
+      };
+      animateBars();
     }
 
     // ----- Particle canvas -----
