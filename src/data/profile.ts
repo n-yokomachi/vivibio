@@ -16,7 +16,6 @@ export type OutputItem = {
 export const PROFILE = {
   name: 'Naoki Yokomachi',
   nameJa: '横町 直樹',
-  handle: '@n-yokomachi',
   title: 'Software Engineer / AI Engineer',
   location: 'Tokyo, Japan',
   bio: 'I work across stacks, phases, and layers — whatever the problem needs. Currently focused on AWS and AI.',

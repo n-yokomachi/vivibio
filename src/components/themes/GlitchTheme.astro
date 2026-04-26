@@ -18,7 +18,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       <span class="gl-cyan">CH.026</span>
       <span class="gl-spacer"></span>
       <span class="gl-mono gl-clock" data-glitch-clock>--:--:--</span>
-      <span class="gl-yel gl-mono">142.7MHz</span>
+      <span class="gl-yel gl-mono" data-glitch-mhz>142.7MHz</span>
     </header>
 
     <section class="gl-hero">
@@ -29,7 +29,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       </div>
 
       <div class="gl-mono gl-line">
-        // {PROFILE.title.toLowerCase()} · {PROFILE.location.toLowerCase()} · {PROFILE.handle}
+        // {PROFILE.title.toLowerCase()} · {PROFILE.location.toLowerCase()}
       </div>
 
       <div class="gl-mono gl-tagline gl-cyan">
@@ -46,7 +46,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       <div class="gl-bio-ja">{PROFILE.bioJa}</div>
     </section>
 
-    <h2 class="gl-h2"><span class="gl-h2-dot"></span><span class="gl-glitch-text" data-text="LINKS">LINKS</span></h2>
+    <h2 class="gl-h2" data-glitch-shake><span class="gl-h2-dot"></span><span class="gl-glitch-text" data-text="LINKS">LINKS</span></h2>
     <div class="gl-links">
       {LINKS.map((l) => (
         <a
@@ -62,7 +62,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       ))}
     </div>
 
-    <h2 class="gl-h2"><span class="gl-h2-dot"></span><span class="gl-glitch-text" data-text="OUTPUT">OUTPUT</span></h2>
+    <h2 class="gl-h2" data-glitch-shake><span class="gl-h2-dot"></span><span class="gl-glitch-text" data-text="OUTPUT">OUTPUT</span></h2>
     <div class="gl-output gl-card" data-tag="STREAM">
       {OUTPUTS.map((o) => (
         <a href={o.url} class="gl-output-row" target="_blank" rel="noopener noreferrer">
@@ -255,20 +255,35 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
     display: block;
     flex: 1;
     height: var(--h, 14px);
-    background: var(--c);
+    background: linear-gradient(to top, var(--c) 0%, var(--c) 35%, transparent 100%);
     position: relative;
     will-change: height;
     z-index: 1;
   }
+  /* Far afterimage — heavily blurred, lags more */
   .gl-stripe i::before {
     content: '';
     position: absolute;
     bottom: 0;
-    left: -2px;
-    right: -2px;
+    left: -4px;
+    right: -4px;
     height: var(--gh, 14px);
-    background: var(--c);
-    filter: blur(4px);
+    background: linear-gradient(to top, var(--c) 0%, var(--c) 30%, transparent 100%);
+    filter: blur(7px);
+    opacity: 0.7;
+    z-index: -1;
+    pointer-events: none;
+  }
+  /* Near afterimage — lightly blurred, lags slightly */
+  .gl-stripe i::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -1px;
+    right: -1px;
+    height: var(--gh2, 14px);
+    background: linear-gradient(to top, var(--c) 0%, var(--c) 35%, transparent 100%);
+    filter: blur(2px);
     opacity: 0.55;
     z-index: -1;
     pointer-events: none;
@@ -468,6 +483,18 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       setInterval(tick, 1000);
     }
 
+    // ----- MHz random scanner (XXX.X MHz, swaps fast for radio-tuning vibe) -----
+    const mhzEl = document.querySelector<HTMLElement>('[data-glitch-mhz]');
+    if (mhzEl) {
+      const updateMhz = () => {
+        const intPart = 100 + Math.floor(Math.random() * 900); // 100–999
+        const decPart = Math.floor(Math.random() * 10);        // 0–9
+        mhzEl.textContent = `${intPart}.${decPart}MHz`;
+      };
+      updateMhz();
+      setInterval(updateMhz, 110);
+    }
+
     // ----- Typewriter -----
     const tw = document.querySelector<HTMLElement>('[data-glitch-typewriter]');
     if (tw) {
@@ -491,27 +518,36 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       step();
     }
 
-    // ----- Periodic glitch shake on the name -----
-    const shakeEl = document.querySelector<HTMLElement>('[data-glitch-shake]');
-    if (shakeEl) {
+    // ----- Periodic glitch shake on every [data-glitch-shake] element -----
+    const shakeEls = document.querySelectorAll<HTMLElement>('[data-glitch-shake]');
+    shakeEls.forEach((el) => {
+      const interval = 1500 + Math.random() * 2000;
       setInterval(() => {
         if (Math.random() > 0.5) {
-          shakeEl.classList.add('gl-shake');
-          setTimeout(() => shakeEl.classList.remove('gl-shake'), 200);
+          el.classList.add('gl-shake');
+          setTimeout(() => el.classList.remove('gl-shake'), 200);
         }
-      }, 1800);
-    }
+      }, interval);
+    });
 
-    // ----- Audio-waveform stripe with afterimage trail -----
+    // ----- Audio-waveform stripe with two-layer afterimage -----
     const stripe = document.querySelector<HTMLElement>('[data-glitch-stripe]');
     if (stripe) {
       const bars = Array.from(stripe.querySelectorAll<HTMLElement>('i'));
-      type Bar = { el: HTMLElement; current: number; target: number; ghost: number; speed: number };
+      type Bar = {
+        el: HTMLElement;
+        current: number;
+        target: number;
+        ghost: number;
+        ghost2: number;
+        speed: number;
+      };
       const state: Bar[] = bars.map((el) => ({
         el,
         current: Math.random(),
         target: Math.random(),
         ghost: Math.random(),
+        ghost2: Math.random(),
         speed: 0.05 + Math.random() * 0.08,
       }));
       const minH = 3;
@@ -519,15 +555,18 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       const animateBars = () => {
         for (const b of state) {
           b.current += (b.target - b.current) * b.speed;
-          // Ghost lags behind the leading bar to produce afterimage
-          b.ghost += (b.current - b.ghost) * b.speed * 0.4;
+          // Far ghost lags more (stronger trail), near ghost lags less
+          b.ghost += (b.current - b.ghost) * b.speed * 0.18;
+          b.ghost2 += (b.current - b.ghost2) * b.speed * 0.45;
           if (Math.abs(b.current - b.target) < 0.04) {
             b.target = Math.random();
           }
           const h = minH + b.current * (maxH - minH);
           const gh = minH + b.ghost * (maxH - minH);
+          const gh2 = minH + b.ghost2 * (maxH - minH);
           b.el.style.setProperty('--h', `${h.toFixed(2)}px`);
           b.el.style.setProperty('--gh', `${gh.toFixed(2)}px`);
+          b.el.style.setProperty('--gh2', `${gh2.toFixed(2)}px`);
         }
         requestAnimationFrame(animateBars);
       };
@@ -535,16 +574,16 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
     }
 
     // ----- Glitch RGB-shift wobble (animates --gl-shift-x/y/skew on .gl) -----
+    // Baseline -3px / 1px keeps the canonical RGB shift; small wobble adds breathing.
     const glContainer = document.querySelector<HTMLElement>('.gl');
     if (glContainer) {
       let glStart = 0;
       const animateShift = (time: number) => {
         if (glStart === 0) glStart = time;
         const t = (time - glStart) / 1000;
-        // Two overlapping sine waves give an organic wobble that occasionally pulses
-        const x = Math.sin(t * 1.5) * 3 + Math.sin(t * 5.7) * 0.6;
-        const y = Math.cos(t * 1.1) * 1.4 + Math.sin(t * 3.3) * 0.4;
-        const skew = Math.sin(t * 0.6) * 0.6;
+        const x = -3 + Math.sin(t * 1.3) * 0.9 + Math.sin(t * 4.7) * 0.25;
+        const y = 1 + Math.cos(t * 1.0) * 0.45 + Math.sin(t * 2.9) * 0.18;
+        const skew = Math.sin(t * 0.5) * 0.32;
         glContainer.style.setProperty('--gl-shift-x', `${x.toFixed(2)}px`);
         glContainer.style.setProperty('--gl-shift-y', `${y.toFixed(2)}px`);
         glContainer.style.setProperty('--gl-skew', `${skew.toFixed(2)}deg`);
@@ -553,7 +592,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       requestAnimationFrame(animateShift);
     }
 
-    // ----- Particle canvas -----
+    // ----- Particle canvas + periodic rocket -----
     const canvas = document.querySelector<HTMLCanvasElement>('.gl-particles');
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -567,6 +606,10 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
 
         type P = { x: number; y: number; vx: number; vy: number; r: number };
         const particles: P[] = [];
+
+        type Rocket = { x: number; y: number; vx: number; active: boolean };
+        const rocket: Rocket = { x: -100, y: 0, vx: 0, active: false };
+        const ROCKET_RADIUS = 110;
 
         function resize() {
           if (!canvas || !ctx) return;
@@ -590,23 +633,131 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
           }
         }
 
+        type RocketExt = Rocket & { vy: number };
+        const rocketExt = rocket as RocketExt;
+        rocketExt.vy = 0;
+
+        function launchRocket() {
+          rocketExt.active = true;
+          // Spawn just outside the bottom-right corner
+          rocketExt.x = w + 40;
+          rocketExt.y = h + 30;
+          // Travel toward the top-left at ~135deg with small variance
+          const speed = 9 + Math.random() * 4;
+          const angle = Math.PI + Math.PI / 4 + (Math.random() - 0.5) * 0.4; // ≈ 225deg, heading up-left
+          rocketExt.vx = Math.cos(angle) * speed;
+          rocketExt.vy = Math.sin(angle) * speed;
+        }
+
+        function scheduleRocket() {
+          const delay = 9000 + Math.random() * 11000; // 9–20 s between launches
+          setTimeout(() => {
+            if (!rocketExt.active) launchRocket();
+            scheduleRocket();
+          }, delay);
+        }
+        scheduleRocket();
+
+        function drawRocket() {
+          if (!ctx || !rocketExt.active) return;
+          const angle = Math.atan2(rocketExt.vy, rocketExt.vx);
+          ctx.save();
+          ctx.translate(rocketExt.x, rocketExt.y);
+          ctx.rotate(angle);
+          // Dense flame trail in the rocket's local -x direction (i.e. behind it)
+          const FLAME_LEN = 36;
+          for (let i = 0; i < FLAME_LEN; i++) {
+            const t = i / FLAME_LEN;
+            const tx = -i * 3.2 + (Math.random() - 0.5) * 2.5;
+            const ty = (Math.random() - 0.5) * (3 + i * 0.32);
+            const tr = Math.max(0.4, 5.5 - i * 0.13);
+            const opacity = Math.max(0, 0.95 - t * 0.92);
+            ctx.fillStyle =
+              i < 3 ? '#fff' : i < 9 ? '#ffd200' : i < 18 ? '#ff5733' : '#ff2d8d';
+            ctx.globalAlpha = opacity;
+            ctx.beginPath();
+            ctx.arc(tx, ty, tr, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          // Wide nozzle puff (bright core)
+          for (let i = 0; i < 8; i++) {
+            const tx = -2 + (Math.random() - 0.5) * 4;
+            const ty = (Math.random() - 0.5) * 6;
+            ctx.fillStyle = '#fff';
+            ctx.globalAlpha = 0.6 + Math.random() * 0.4;
+            ctx.beginPath();
+            ctx.arc(tx, ty, 1.5 + Math.random() * 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          // Rocket body (drawn along positive x in local frame, so it points where it's heading)
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = '#16f0ff';
+          ctx.fillRect(0, -3, 14, 6);
+          ctx.beginPath();
+          ctx.moveTo(14, -3);
+          ctx.lineTo(22, 0);
+          ctx.lineTo(14, 3);
+          ctx.fill();
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(2, -1, 4, 2);
+          ctx.restore();
+        }
+
         let raf = 0;
         function tick() {
           if (!ctx) return;
           ctx.clearRect(0, 0, w, h);
+
+          // Advance rocket
+          if (rocketExt.active) {
+            rocketExt.x += rocketExt.vx;
+            rocketExt.y += rocketExt.vy;
+            if (rocketExt.x < -80 || rocketExt.y < -80) rocketExt.active = false;
+          }
+
+          // Update particles
           for (const p of particles) {
+            // Rocket dispersion: push particles radially away from the rocket
+            if (rocketExt.active) {
+              const dx = p.x - rocketExt.x;
+              const dy = p.y - rocketExt.y;
+              const d2 = dx * dx + dy * dy;
+              if (d2 < ROCKET_RADIUS * ROCKET_RADIUS && d2 > 1) {
+                const d = Math.sqrt(d2);
+                const force = 1.6 * (1 - d / ROCKET_RADIUS);
+                p.vx += (dx / d) * force;
+                p.vy += (dy / d) * force;
+              }
+            }
+            // Soft damping so dispersed particles eventually settle
+            p.vx *= 0.992;
+            p.vy *= 0.992;
+            // Tiny brownian impulse keeps the field alive at rest
+            p.vx += (Math.random() - 0.5) * 0.02;
+            p.vy += (Math.random() - 0.5) * 0.02;
+            // Velocity clamp to avoid runaway speeds
+            const v = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+            const MAX_V = 4;
+            if (v > MAX_V) {
+              p.vx = (p.vx / v) * MAX_V;
+              p.vy = (p.vy / v) * MAX_V;
+            }
+            // Integrate
             p.x += p.vx;
             p.y += p.vy;
             if (p.x < 0) p.x += w;
             if (p.x > w) p.x -= w;
             if (p.y < 0) p.y += h;
             if (p.y > h) p.y -= h;
+            // Render
             ctx.fillStyle = COLOR;
             ctx.globalAlpha = 0.7;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
             ctx.fill();
           }
+
+          // Linking lines
           ctx.strokeStyle = COLOR;
           ctx.lineWidth = 0.5;
           for (let i = 0; i < particles.length; i++) {
@@ -623,6 +774,9 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
               }
             }
           }
+
+          drawRocket();
+
           raf = requestAnimationFrame(tick);
         }
 
