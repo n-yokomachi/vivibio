@@ -438,11 +438,21 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    type Star = { x: number; y: number; r: number; phase: number; sparkleT: number };
+    type Star = {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      r: number;
+      phase: number;
+      sparkleT: number;
+    };
     const stars: Star[] = [];
     const STAR_COUNT = 100;
     const SPARKLE_FRAMES = 36;          // ピーク瞬きの長さ（≈0.6s）
     const SPARKLE_TRIGGER = 0.0009;     // 各フレームでの発火確率/星
+    const STAR_MAX_V = 0.18;            // 星の最大速度
+    const STAR_BROWNIAN = 0.006;        // 各フレームの微小ランダム加速度
 
     function spawnStars() {
       stars.length = 0;
@@ -450,6 +460,8 @@ const linkCount = String(LINKS.length).padStart(2, '0');
         stars.push({
           x: Math.random() * w,
           y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.12,
+          vy: (Math.random() - 0.5) * 0.12,
           r: Math.random() * 0.7 + 0.3,
           phase: Math.random() * Math.PI * 2,
           sparkleT: 0,
@@ -499,23 +511,6 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       }
     }
 
-    type Constellation = {
-      members: Particle[];
-      // 0: idle, 1: drawing, 2: hold, 3: fading
-      phase: 0 | 1 | 2 | 3;
-      progress: number;  // フェーズ内 0..1
-      nextAt: number;    // 次の発火時刻（t basis）
-    };
-    const constellation: Constellation = {
-      members: [],
-      phase: 0,
-      progress: 0,
-      nextAt: 3,  // 初回 3秒後
-    };
-    const CONST_DRAW = 1.5;   // 線描画にかける秒数
-    const CONST_HOLD = 1.0;
-    const CONST_FADE = 1.0;
-
     let mouse = { x: -9999, y: -9999, active: false };
     const MOUSE_REPEL_RADIUS = 100;
     const MOUSE_REPEL_FORCE = 0.4;
@@ -545,7 +540,27 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       ctx.fillStyle = 'rgba(5, 8, 14, 0.18)';
       ctx.fillRect(0, 0, w, h);
 
-      // ===== Layer B-link: 近接の星同士をつなぐ線（星座網）=====
+      // ===== Layer B-move: 星のゆるやかな漂い更新（動的な星座網のための前段）=====
+      for (const s of stars) {
+        // 微小ブラウン運動で組み替えに不規則性を出す
+        s.vx += (Math.random() - 0.5) * STAR_BROWNIAN;
+        s.vy += (Math.random() - 0.5) * STAR_BROWNIAN;
+        // 速度上限
+        const sv = Math.hypot(s.vx, s.vy);
+        if (sv > STAR_MAX_V) {
+          s.vx = (s.vx / sv) * STAR_MAX_V;
+          s.vy = (s.vy / sv) * STAR_MAX_V;
+        }
+        // 位置更新 + トロイダルラップ
+        s.x += s.vx;
+        s.y += s.vy;
+        if (s.x < 0) s.x += w;
+        if (s.x > w) s.x -= w;
+        if (s.y < 0) s.y += h;
+        if (s.y > h) s.y -= h;
+      }
+
+      // ===== Layer B-link: 近接の星同士をつなぐ線（動的星座網）=====
       // 星のレンダリング前に描画して、星の輝きで線が控えめに見えるようにする
       ctx.lineWidth = 0.3;
       const STAR_LINK_DIST = 130;
@@ -660,83 +675,6 @@ const linkCount = String(LINKS.length).padStart(2, '0');
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
-          }
-        }
-      }
-
-      // ===== Layer F: Constellation =====
-      // dt は1フレーム ~16.7ms ≒ 0.0167秒。t は 0.008/frame の論理時間なので、実時間換算が必要。
-      // ここでは t を「秒の半分」と見なして扱いやすくする。
-      const tSec = t / 0.008 / 60; // 概ね経過秒数
-
-      if (constellation.phase === 0 && tSec >= constellation.nextAt) {
-        // 選出: ランダムに3〜5個
-        const memberCount = 3 + Math.floor(Math.random() * 3);
-        const pool = particles.slice();
-        for (let i = pool.length - 1; i > 0; i--) {
-          const k = Math.floor(Math.random() * (i + 1));
-          [pool[i], pool[k]] = [pool[k], pool[i]];
-        }
-        constellation.members = pool.slice(0, memberCount);
-        constellation.phase = 1;
-        constellation.progress = 0;
-      }
-
-      if (constellation.phase !== 0) {
-        // 1 frame 進行を秒換算: rAF 60fps 仮定で 1/60秒
-        constellation.progress += 1 / 60;
-        const m = constellation.members;
-        let alpha = 0;
-        if (constellation.phase === 1) {
-          // 線が伸びる: progress / CONST_DRAW で完成率
-          const ratio = Math.min(1, constellation.progress / CONST_DRAW);
-          alpha = 0.4 * ratio;
-          if (constellation.progress >= CONST_DRAW) {
-            constellation.phase = 2;
-            constellation.progress = 0;
-          }
-        } else if (constellation.phase === 2) {
-          alpha = 0.4;
-          if (constellation.progress >= CONST_HOLD) {
-            constellation.phase = 3;
-            constellation.progress = 0;
-          }
-        } else if (constellation.phase === 3) {
-          alpha = 0.4 * (1 - Math.min(1, constellation.progress / CONST_FADE));
-          if (constellation.progress >= CONST_FADE) {
-            constellation.phase = 0;
-            constellation.members = [];
-            constellation.nextAt = tSec + 8 + Math.random() * 2;
-          }
-        }
-
-        if (alpha > 0 && m.length >= 2) {
-          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
-          ctx.lineWidth = 0.5;
-          ctx.beginPath();
-          ctx.moveTo(m[0].x, m[0].y);
-          // Layer F-描画範囲: phase=1 のとき progress 比に応じて部分的に伸ばす
-          const drawRatio =
-            constellation.phase === 1 ? Math.min(1, constellation.progress / CONST_DRAW) : 1;
-          const segCount = m.length - 1;
-          const drawnSegs = Math.floor(segCount * drawRatio);
-          const partialT = segCount * drawRatio - drawnSegs;
-          for (let i = 0; i < drawnSegs; i++) {
-            ctx.lineTo(m[i + 1].x, m[i + 1].y);
-          }
-          if (drawnSegs < segCount && partialT > 0) {
-            const a = m[drawnSegs];
-            const b = m[drawnSegs + 1];
-            ctx.lineTo(a.x + (b.x - a.x) * partialT, a.y + (b.y - a.y) * partialT);
-          }
-          ctx.stroke();
-
-          // メンバー粒子を強調表示（白い大きな点）
-          ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 1.4})`;
-          for (const p of m) {
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r + 1.2, 0, Math.PI * 2);
-            ctx.fill();
           }
         }
       }
