@@ -500,6 +500,32 @@ const linkCount = String(LINKS.length).padStart(2, '0');
         ctx.fill();
       }
 
+      // ===== Layer C: Core pulse ring =====
+      const cx = w / 2;
+      const cy = h * 0.42;
+      const pulse = 0.6 + Math.sin(t * 1.5) * 0.4;
+
+      // 中央のグロー
+      const coreG = ctx.createRadialGradient(cx, cy, 0, cx, cy, 180);
+      coreG.addColorStop(0, `rgba(126, 200, 255, ${0.18 * pulse})`);
+      coreG.addColorStop(0.5, 'rgba(90, 140, 220, 0.05)');
+      coreG.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = coreG;
+      ctx.fillRect(0, 0, w, h);
+
+      // 内リング
+      ctx.strokeStyle = `rgba(180, 220, 255, ${0.4 * pulse})`;
+      ctx.lineWidth = 0.6;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 60 + pulse * 6, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 外リング
+      ctx.strokeStyle = 'rgba(180, 220, 255, 0.15)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 100, 0, Math.PI * 2);
+      ctx.stroke();
+
       // ここに後続のレイヤーを追加していく
 
       raf = requestAnimationFrame(tick);
