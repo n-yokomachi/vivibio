@@ -7,6 +7,7 @@ import { PROFILE } from '../data/profile.ts';
   <h1 class="mn-name">
     I'm <span class="hl">{PROFILE.name}</span>.
   </h1>
+  <p class="mn-handle">@{PROFILE.handle}</p>
   <p class="mn-title">{PROFILE.title}</p>
   <p class="mn-sub">{PROFILE.bio}</p>
   <p class="mn-sub-ja">{PROFILE.bioJa}</p>
@@ -85,5 +86,13 @@ import { PROFILE } from '../data/profile.ts';
     color: rgba(26, 26, 26, 0.4);
     font-weight: 500;
     margin-bottom: 2px;
+  }
+  .mn-handle {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: rgba(26, 26, 26, 0.5);
+    margin: 6px 0 0;
+    font-weight: 500;
   }
 </style>
