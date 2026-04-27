@@ -38,7 +38,7 @@ const {
         try {
           var hash = location.hash.slice(1);
           var stored = localStorage.getItem('vivibio-theme');
-          var allowed = ['minimal', 'glitch'];
+          var allowed = ['minimal', 'glitch', 'particle'];
           var theme =
             allowed.indexOf(hash) >= 0
               ? hash
@@ -88,6 +88,11 @@ const {
         color: #fff;
         font-family: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       }
+      :root[data-theme='particle'] body {
+        background: #05080e;
+        color: #e2efff;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      }
       body {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
@@ -100,7 +105,8 @@ const {
         display: none;
       }
       :root[data-theme='minimal'] .theme-pane[data-theme='minimal'],
-      :root[data-theme='glitch'] .theme-pane[data-theme='glitch'] {
+      :root[data-theme='glitch'] .theme-pane[data-theme='glitch'],
+      :root[data-theme='particle'] .theme-pane[data-theme='particle'] {
         display: block;
       }
     </style>
