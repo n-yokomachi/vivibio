@@ -530,6 +530,134 @@ const linkCount = String(LINKS.length).padStart(2, '0');
     window.addEventListener('touchend', onLeave);
     window.addEventListener('mouseleave', onLeave);
 
+    // ----- LINK ホバーで星集合テキストを生成 -----
+    type SwarmDot = {
+      x: number;
+      y: number;
+      tx: number;
+      ty: number;
+      vx: number;
+      vy: number;
+      alpha: number;
+      r: number;
+      // 0: gathering, 1: scattering, 2: dead
+      state: 0 | 1 | 2;
+    };
+    const swarm: SwarmDot[] = [];
+    let swarmText = '';
+
+    const offCanvas = document.createElement('canvas');
+    const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
+
+    function buildSwarmFor(rawText: string) {
+      if (!offCtx) return;
+      const text = rawText.toUpperCase();
+      if (text === swarmText) return; // 同じテキストの再生成は避ける
+      swarmText = text;
+
+      // 文字サイズをビューポート幅に合わせて自動調整
+      const isNarrow = w < 640;
+      const maxWidth = Math.min(w * 0.85, 700);
+      let fontSize = isNarrow ? 56 : 110;
+      offCtx.font = `900 ${fontSize}px 'Inter', 'Helvetica Neue', sans-serif`;
+      while (offCtx.measureText(text).width > maxWidth && fontSize > 22) {
+        fontSize -= 4;
+        offCtx.font = `900 ${fontSize}px 'Inter', 'Helvetica Neue', sans-serif`;
+      }
+
+      const measuredWidth = Math.ceil(offCtx.measureText(text).width);
+      const tw = measuredWidth + 20;
+      const th = Math.ceil(fontSize * 1.3);
+      offCanvas.width = tw;
+      offCanvas.height = th;
+
+      offCtx.font = `900 ${fontSize}px 'Inter', 'Helvetica Neue', sans-serif`;
+      offCtx.fillStyle = '#fff';
+      offCtx.textBaseline = 'middle';
+      offCtx.textAlign = 'left';
+      offCtx.fillText(text, 10, th / 2);
+
+      // テキスト形状をサンプリング（透明度がある画素を target に）
+      const sampleStep = isNarrow ? 2 : 3;
+      const data = offCtx.getImageData(0, 0, tw, th).data;
+      const targets: Array<[number, number]> = [];
+      const placeCx = w / 2;
+      const placeCy = h / 2;
+      for (let yy = 0; yy < th; yy += sampleStep) {
+        for (let xx = 0; xx < tw; xx += sampleStep) {
+          if (data[(yy * tw + xx) * 4 + 3] > 128) {
+            targets.push([
+              placeCx - tw / 2 + xx,
+              placeCy - th / 2 + yy,
+            ]);
+          }
+        }
+      }
+
+      if (targets.length === 0) {
+        swarm.length = 0;
+        return;
+      }
+
+      // 文字ごとの密度を一定に保つため、サンプリング結果をそのまま使う
+      // （HUGGINGFACE 等の長い文字列でも 1 文字あたりの粒子数が GITHUB と同じになる）
+      // ハード上限のみ安全側で設定
+      const HARD_CAP = isNarrow ? 2400 : 4000;
+      const desired = Math.min(targets.length, HARD_CAP);
+      // 既に gathering 中のドットはターゲットだけ更新して即移動継続
+      for (let i = 0; i < Math.min(swarm.length, desired); i++) {
+        const t = targets[Math.floor(Math.random() * targets.length)];
+        swarm[i].tx = t[0];
+        swarm[i].ty = t[1];
+        swarm[i].state = 0;
+      }
+      // 不足分は新規生成（画面ランダム位置から飛んでくる）
+      while (swarm.length < desired) {
+        const t = targets[Math.floor(Math.random() * targets.length)];
+        swarm.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          tx: t[0],
+          ty: t[1],
+          vx: 0,
+          vy: 0,
+          alpha: 0,
+          r: 0.45 + Math.random() * 0.35,
+          state: 0,
+        });
+      }
+      // 過剰分は dead にして自然消滅
+      for (let i = desired; i < swarm.length; i++) {
+        if (swarm[i].state === 0) swarm[i].state = 1;
+      }
+    }
+
+    function scatterSwarm() {
+      swarmText = '';
+      for (const d of swarm) {
+        if (d.state === 2) continue;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1.5 + Math.random() * 2.5;
+        d.vx = Math.cos(angle) * speed;
+        d.vy = Math.sin(angle) * speed;
+        d.state = 1;
+      }
+    }
+
+    // 各 .pa-link にホバー / タッチを仕掛ける
+    const linkEls = document.querySelectorAll<HTMLElement>('.pa-link');
+    linkEls.forEach((el) => {
+      const labelEl = el.querySelector<HTMLElement>('.lab');
+      const label = labelEl?.textContent?.trim() ?? '';
+      if (!label) return;
+      el.addEventListener('mouseenter', () => buildSwarmFor(label));
+      el.addEventListener('mouseleave', () => scatterSwarm());
+      // タッチ: 押下中はテキスト表示、離したら拡散（クリック自体は阻害しない）
+      el.addEventListener('touchstart', () => buildSwarmFor(label), { passive: true });
+      el.addEventListener('touchend', () => scatterSwarm(), { passive: true });
+      el.addEventListener('touchcancel', () => scatterSwarm(), { passive: true });
+    });
+
     let raf = 0;
     let t = 0;
     function tick() {
@@ -676,6 +804,43 @@ const linkCount = String(LINKS.length).padStart(2, '0');
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
           }
+        }
+      }
+
+      // ===== Layer G: ホバーテキストのスウォーム（最前面）=====
+      for (let i = swarm.length - 1; i >= 0; i--) {
+        const d = swarm[i];
+        if (d.state === 0) {
+          // 集合中: ターゲットへ高速ラープ
+          d.x += (d.tx - d.x) * 0.22;
+          d.y += (d.ty - d.y) * 0.22;
+          d.alpha = Math.min(1, d.alpha + 0.10);
+        } else if (d.state === 1) {
+          // 拡散中: 慣性減衰しながらフェードアウト
+          d.x += d.vx;
+          d.y += d.vy;
+          d.vx *= 0.96;
+          d.vy *= 0.96;
+          d.alpha -= 0.025;
+          if (d.alpha <= 0) {
+            d.alpha = 0;
+            d.state = 2;
+          }
+        }
+        if (d.state === 2) {
+          swarm.splice(i, 1);
+          continue;
+        }
+        if (d.alpha > 0.02) {
+          // 控えめなハロー (小さめ・薄め) → 文字輪郭を残しつつ淡い発光
+          ctx.fillStyle = `rgba(126, 200, 255, ${d.alpha * 0.22})`;
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r * 1.8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = `rgba(226, 239, 255, ${d.alpha})`;
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fill();
         }
       }
 
