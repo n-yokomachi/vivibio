@@ -438,9 +438,11 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    type Star = { x: number; y: number; r: number; phase: number };
+    type Star = { x: number; y: number; r: number; phase: number; sparkleT: number };
     const stars: Star[] = [];
     const STAR_COUNT = 100;
+    const SPARKLE_FRAMES = 36;          // ピーク瞬きの長さ（≈0.6s）
+    const SPARKLE_TRIGGER = 0.0009;     // 各フレームでの発火確率/星
 
     function spawnStars() {
       stars.length = 0;
@@ -450,6 +452,7 @@ const linkCount = String(LINKS.length).padStart(2, '0');
           y: Math.random() * h,
           r: Math.random() * 0.7 + 0.3,
           phase: Math.random() * Math.PI * 2,
+          sparkleT: 0,
         });
       }
     }
@@ -542,13 +545,42 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       ctx.fillStyle = 'rgba(5, 8, 14, 0.18)';
       ctx.fillRect(0, 0, w, h);
 
-      // ===== Layer B: Star field (twinkle) =====
+      // ===== Layer B: Star field (twinkle + sparkle) =====
       for (const s of stars) {
+        // ベースの淡い瞬き
         const a = 0.3 + Math.sin(t * 1.2 + s.phase) * 0.4;
         ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0, a)})`;
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         ctx.fill();
+
+        // ところどころの強い瞬き（光芒つきフラッシュ）
+        if (s.sparkleT === 0 && Math.random() < SPARKLE_TRIGGER) {
+          s.sparkleT = SPARKLE_FRAMES;
+        }
+        if (s.sparkleT > 0) {
+          const ratio = s.sparkleT / SPARKLE_FRAMES;          // 1 → 0
+          const env = Math.sin((1 - ratio) * Math.PI);        // 山型エンベロープ
+          const len = 4 + env * 10;                            // 光芒長 4–14px
+
+          // 4 方向の光芒
+          ctx.strokeStyle = `rgba(255, 255, 255, ${env * 0.85})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(s.x - len, s.y);
+          ctx.lineTo(s.x + len, s.y);
+          ctx.moveTo(s.x, s.y - len);
+          ctx.lineTo(s.x, s.y + len);
+          ctx.stroke();
+
+          // 中央のブライトコア
+          ctx.fillStyle = `rgba(255, 255, 255, ${env})`;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r + env * 1.6, 0, Math.PI * 2);
+          ctx.fill();
+
+          s.sparkleT--;
+        }
       }
 
       // 重力の中心（Layer D で参照）
