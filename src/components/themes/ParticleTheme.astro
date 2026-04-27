@@ -569,6 +569,26 @@ const linkCount = String(LINKS.length).padStart(2, '0');
         ctx.fill();
       }
 
+      // ===== Layer E: Connection lines =====
+      ctx.lineWidth = 0.4;
+      const LINK_DIST = 90;
+      const LINK_DIST2 = LINK_DIST * LINK_DIST;
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < LINK_DIST2) {
+            const a = 0.18 * (1 - Math.sqrt(d2) / LINK_DIST);
+            ctx.strokeStyle = `rgba(120, 180, 240, ${a})`;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
       // ここに後続のレイヤーを追加していく
 
       raf = requestAnimationFrame(tick);
