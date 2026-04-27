@@ -2,6 +2,7 @@
 const themes = [
   { id: 'minimal', label: 'MINIMAL' },
   { id: 'glitch', label: 'GLITCH' },
+  { id: 'particle', label: 'PARTICLE' },
 ];
 ---
 
@@ -21,6 +22,15 @@ const themes = [
               <rect x="3" y="3" width="14" height="14" rx="2" fill="#ff2d8d" />
               <rect x="7" y="7" width="14" height="14" rx="2" fill="#16f0ff" />
               <rect x="5" y="5" width="14" height="14" rx="2" fill="#fff" fill-opacity="0.85" />
+            </svg>
+          )}
+          {t.id === 'particle' && (
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" fill="none" stroke="#7ec8ff" stroke-opacity="0.25" stroke-width="0.4" />
+              <circle cx="12" cy="12" r="7" fill="none" stroke="#7ec8ff" stroke-opacity="0.4" stroke-width="0.6" />
+              <circle cx="12" cy="12" r="2" fill="#7ec8ff" />
+              <circle cx="19" cy="12" r="1.4" fill="#e2efff" />
+              <circle cx="6.5" cy="15" r="1" fill="#e2efff" opacity="0.7" />
             </svg>
           )}
         </span>
@@ -92,6 +102,10 @@ const themes = [
     border-color: #ff2d8d;
     box-shadow: -4px 0 16px rgba(255, 45, 141, 0.25);
   }
+  :root[data-theme='particle'] .ts-btn[aria-current='true'] {
+    border-color: #7ec8ff;
+    box-shadow: -4px 0 16px rgba(126, 200, 255, 0.25);
+  }
 
   /* Hover: slide whole stack out (desktop) */
   @media (hover: hover) {
@@ -107,7 +121,7 @@ const themes = [
 </style>
 
 <script>
-  const ALLOWED = ['minimal', 'glitch'] as const;
+  const ALLOWED = ['minimal', 'glitch', 'particle'] as const;
   type ThemeId = (typeof ALLOWED)[number];
 
   const root = document.documentElement;
