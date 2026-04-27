@@ -453,6 +453,24 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       }
     }
 
+    type Particle = { x: number; y: number; vx: number; vy: number; r: number; phase: number };
+    const particles: Particle[] = [];
+
+    function spawnParticles() {
+      const n = Math.floor((w * h) / 14000);
+      particles.length = 0;
+      for (let i = 0; i < n; i++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.18,
+          vy: (Math.random() - 0.5) * 0.18,
+          r: Math.random() * 1.2 + 0.4,
+          phase: Math.random() * Math.PI * 2,
+        });
+      }
+    }
+
     let raf = 0;
     let t = 0;
     function tick() {
@@ -526,6 +544,31 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       ctx.arc(cx, cy, 100, 0, Math.PI * 2);
       ctx.stroke();
 
+      // ===== Layer D: Particle field (drift + gravity to core) =====
+      for (const p of particles) {
+        const dx = cx - p.x;
+        const dy = cy - p.y;
+        const d = Math.hypot(dx, dy) + 0.1;
+        p.vx += (dx / d) * 0.0015;
+        p.vy += (dy / d) * 0.0015;
+
+        p.vx *= 0.97;
+        p.vy *= 0.97;
+
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x += w;
+        if (p.x > w) p.x -= w;
+        if (p.y < 0) p.y += h;
+        if (p.y > h) p.y -= h;
+
+        const a = 0.45 + Math.sin(t * 2 + p.phase) * 0.3;
+        ctx.fillStyle = `rgba(200, 230, 255, ${Math.max(0, a)})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
       // ここに後続のレイヤーを追加していく
 
       raf = requestAnimationFrame(tick);
@@ -534,11 +577,13 @@ const linkCount = String(LINKS.length).padStart(2, '0');
     const ro = new ResizeObserver(() => {
       resize();
       spawnStars();
+      spawnParticles();
     });
     ro.observe(canvas);
 
     resize();
     spawnStars();
+    spawnParticles();
     raf = requestAnimationFrame(tick);
 
     document.addEventListener('visibilitychange', () => {
