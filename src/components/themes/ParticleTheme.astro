@@ -468,8 +468,8 @@ const linkCount = String(LINKS.length).padStart(2, '0');
     const particles: Particle[] = [];
 
     function spawnParticles() {
-      // 星雲を高密度の動くパーティクルで表現するため密度を約4倍に
-      const n = Math.floor((w * h) / 3500);
+      // 星雲を高密度の動くパーティクルで表現するため密度を約8倍に
+      const n = Math.floor((w * h) / 1800);
       particles.length = 0;
       // 青白を主体に紫・薄マゼンタを混ぜて星雲の色ムラを表現
       const palette: Array<[number, number, number]> = [
@@ -592,8 +592,8 @@ const linkCount = String(LINKS.length).padStart(2, '0');
 
       // ===== Layer E: Connection lines =====
       // 高密度化に伴い線が混みやすいので閾値・透明度を控えめに
-      ctx.lineWidth = 0.35;
-      const LINK_DIST = 70;
+      ctx.lineWidth = 0.3;
+      const LINK_DIST = 55;
       const LINK_DIST2 = LINK_DIST * LINK_DIST;
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
@@ -601,7 +601,7 @@ const linkCount = String(LINKS.length).padStart(2, '0');
           const dy = particles[i].y - particles[j].y;
           const d2 = dx * dx + dy * dy;
           if (d2 < LINK_DIST2) {
-            const a = 0.10 * (1 - Math.sqrt(d2) / LINK_DIST);
+            const a = 0.07 * (1 - Math.sqrt(d2) / LINK_DIST);
             ctx.strokeStyle = `rgba(120, 180, 240, ${a})`;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
