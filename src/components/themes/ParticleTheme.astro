@@ -545,6 +545,27 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       ctx.fillStyle = 'rgba(5, 8, 14, 0.18)';
       ctx.fillRect(0, 0, w, h);
 
+      // ===== Layer B-link: 近接の星同士をつなぐ線（星座網）=====
+      // 星のレンダリング前に描画して、星の輝きで線が控えめに見えるようにする
+      ctx.lineWidth = 0.3;
+      const STAR_LINK_DIST = 130;
+      const STAR_LINK_DIST2 = STAR_LINK_DIST * STAR_LINK_DIST;
+      for (let i = 0; i < stars.length; i++) {
+        for (let j = i + 1; j < stars.length; j++) {
+          const dx = stars[i].x - stars[j].x;
+          const dy = stars[i].y - stars[j].y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < STAR_LINK_DIST2) {
+            const a = 0.13 * (1 - Math.sqrt(d2) / STAR_LINK_DIST);
+            ctx.strokeStyle = `rgba(180, 220, 255, ${a})`;
+            ctx.beginPath();
+            ctx.moveTo(stars[i].x, stars[i].y);
+            ctx.lineTo(stars[j].x, stars[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
       // ===== Layer B: Star field (twinkle + sparkle) =====
       for (const s of stars) {
         // ベースの淡い瞬き
@@ -554,18 +575,18 @@ const linkCount = String(LINKS.length).padStart(2, '0');
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         ctx.fill();
 
-        // ところどころの強い瞬き（光芒つきフラッシュ）
+        // ところどころの強い瞬き（光芒つきフラッシュ・小さめ）
         if (s.sparkleT === 0 && Math.random() < SPARKLE_TRIGGER) {
           s.sparkleT = SPARKLE_FRAMES;
         }
         if (s.sparkleT > 0) {
           const ratio = s.sparkleT / SPARKLE_FRAMES;          // 1 → 0
           const env = Math.sin((1 - ratio) * Math.PI);        // 山型エンベロープ
-          const len = 4 + env * 10;                            // 光芒長 4–14px
+          const len = 2 + env * 4;                             // 光芒長 2–6px（控えめ）
 
           // 4 方向の光芒
-          ctx.strokeStyle = `rgba(255, 255, 255, ${env * 0.85})`;
-          ctx.lineWidth = 0.5;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${env * 0.8})`;
+          ctx.lineWidth = 0.4;
           ctx.beginPath();
           ctx.moveTo(s.x - len, s.y);
           ctx.lineTo(s.x + len, s.y);
@@ -573,10 +594,10 @@ const linkCount = String(LINKS.length).padStart(2, '0');
           ctx.lineTo(s.x, s.y + len);
           ctx.stroke();
 
-          // 中央のブライトコア
-          ctx.fillStyle = `rgba(255, 255, 255, ${env})`;
+          // 中央のブライトコア（控えめに膨らむ）
+          ctx.fillStyle = `rgba(255, 255, 255, ${env * 0.95})`;
           ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r + env * 1.6, 0, Math.PI * 2);
+          ctx.arc(s.x, s.y, s.r + env * 0.8, 0, Math.PI * 2);
           ctx.fill();
 
           s.sparkleT--;
