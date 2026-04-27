@@ -118,6 +118,20 @@ const themes = [
   .ts[data-open='true'] .ts-btn {
     transform: translateX(0);
   }
+
+  /* タッチ端末では、縮小時に親 .ts の透明領域がコンテンツのタップを奪わないように
+     pointer-events を仕分ける。展開時は閉じる挙動のために auto に戻す。 */
+  @media (hover: none) {
+    .ts {
+      pointer-events: none;
+    }
+    .ts[data-open='true'] {
+      pointer-events: auto;
+    }
+    .ts-btn {
+      pointer-events: auto;
+    }
+  }
 </style>
 
 <script>
