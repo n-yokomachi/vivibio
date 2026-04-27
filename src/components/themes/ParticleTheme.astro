@@ -447,6 +447,34 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       ctx.fillStyle = 'rgba(5, 8, 14, 0.18)';
       ctx.fillRect(0, 0, w, h);
 
+      // ===== Layer A: Nebula =====
+      // 2層のラジアルグラデーションで青紫＋紫マゼンタ。30秒周期で中心が動く。
+      const nebulaT = t * 0.05;
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+
+      // 青紫 nebula
+      const n1x = w * (0.5 + Math.cos(nebulaT) * 0.18);
+      const n1y = h * (0.42 + Math.sin(nebulaT * 0.7) * 0.12);
+      const g1 = ctx.createRadialGradient(n1x, n1y, 0, n1x, n1y, Math.max(w, h) * 0.5);
+      g1.addColorStop(0, 'rgba(126, 200, 255, 0.10)');
+      g1.addColorStop(0.4, 'rgba(90, 109, 255, 0.05)');
+      g1.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = g1;
+      ctx.fillRect(0, 0, w, h);
+
+      // 紫マゼンタ nebula（薄め）
+      const n2x = w * (0.5 + Math.cos(nebulaT * 0.6 + 1.7) * 0.22);
+      const n2y = h * (0.5 + Math.sin(nebulaT * 0.9 + 0.8) * 0.16);
+      const g2 = ctx.createRadialGradient(n2x, n2y, 0, n2x, n2y, Math.max(w, h) * 0.45);
+      g2.addColorStop(0, 'rgba(164, 93, 255, 0.06)');
+      g2.addColorStop(0.5, 'rgba(255, 93, 200, 0.03)');
+      g2.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = g2;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.restore();
+
       // ここに後続のレイヤーを追加していく
 
       raf = requestAnimationFrame(tick);
