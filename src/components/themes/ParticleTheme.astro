@@ -1,0 +1,390 @@
+---
+import { PROFILE, LINKS, OUTPUTS } from '../../data/profile';
+import LinkIcons from '../icons/LinkIcons.astro';
+
+const now = new Date();
+const yyyy = now.getFullYear();
+const mm = String(now.getMonth() + 1).padStart(2, '0');
+const dd = String(now.getDate()).padStart(2, '0');
+const dateFull = `${yyyy}.${mm}.${dd}`;
+const dateMd = `${mm}.${dd}`;
+
+const linkCount = String(LINKS.length).padStart(2, '0');
+---
+
+<div class="pa">
+  <canvas class="pa-canvas" aria-hidden="true"></canvas>
+
+  <div class="pa-content">
+    <header class="pa-top">
+      <span class="pa-mono pa-eye">VVB / 026</span>
+      <span class="pa-bracket" data-particle-bracket>
+        <span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span>
+      </span>
+      <span class="pa-mono pa-eye pa-clock" data-particle-clock>--:--:--</span>
+    </header>
+
+    <section class="pa-hero">
+      <div class="pa-eye">— signal received</div>
+      <h1 class="pa-name"><span class="glow">{PROFILE.name}</span></h1>
+      <div class="pa-name-ja">{PROFILE.nameJa}</div>
+      <div class="pa-handle pa-mono">@{PROFILE.handle}</div>
+      <p class="pa-tagline">{PROFILE.bio}</p>
+      <p class="pa-tagline-ja">{PROFILE.bioJa}</p>
+      <div class="pa-coords pa-mono">
+        <span>35.6762°N</span><span>·</span><span>139.6503°E</span><span>·</span><span>{PROFILE.title}</span>
+      </div>
+    </section>
+
+    <section class="pa-rail">
+      <div class="pa-rail-h">
+        <span class="l">— links</span>
+        <span class="r pa-mono">[ {linkCount} ]</span>
+      </div>
+      <div class="pa-links">
+        {LINKS.map((l) => (
+          <a
+            href={l.url}
+            class="pa-link"
+            title={`${l.label} · ${l.handle}`}
+            target={l.url.startsWith('mailto:') ? undefined : '_blank'}
+            rel={l.url.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+          >
+            <span class="ic"><LinkIcons id={l.id} /></span>
+            <span class="lab">{l.label}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="pa-rail">
+      <div class="pa-rail-h">
+        <span class="l">— outputs</span>
+        <span class="r pa-mono">{dateFull}</span>
+      </div>
+      <div class="pa-outputs">
+        {OUTPUTS.map((o) => (
+          <a href={o.url} class="pa-out" target="_blank" rel="noopener noreferrer">
+            <span class="dot" aria-hidden="true">◦</span>
+            <span class="pa-mono date">{dateMd}</span>
+            <span class={`pa-mono badge badge-${o.badge.toLowerCase()}`}>[{o.badge}]</span>
+            <span class="title">{o.title}</span>
+            <span class="sub">{o.subtitle}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <footer class="pa-foot pa-mono">
+      <span>vivibio / @{PROFILE.handle}</span>
+      <span>© {yyyy} ∞ vivibio</span>
+    </footer>
+  </div>
+</div>
+
+<style>
+  .pa {
+    position: relative;
+    min-height: 100dvh;
+    color: #e2efff;
+    overflow: hidden;
+  }
+
+  /* Canvas — 全画面背景 */
+  .pa-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Vignette */
+  .pa::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.5) 100%);
+    z-index: 1;
+  }
+
+  /* Grain */
+  .pa::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.12;
+    mix-blend-mode: overlay;
+    background-image: radial-gradient(circle at 1px 1px, #fff 0.5px, transparent 1px);
+    background-size: 3px 3px;
+    z-index: 1;
+  }
+
+  .pa-content {
+    position: relative;
+    z-index: 3;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 22px;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (min-width: 768px) {
+    .pa-content {
+      padding: 28px 32px 60px;
+    }
+  }
+
+  .pa-mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  .pa-eye {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(180, 220, 255, 0.55);
+  }
+
+  /* Top bar */
+  .pa-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .pa-bracket {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .pa-bracket span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(180, 220, 255, 0.35);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+  .pa-bracket span.on {
+    background: #7ec8ff;
+    box-shadow: 0 0 8px #7ec8ff;
+  }
+  .pa-clock {
+    min-width: 7ch;
+    text-align: right;
+  }
+
+  /* Hero — コンパクト中央寄せ */
+  .pa-hero {
+    padding: 60px 0 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .pa-name {
+    font-size: clamp(36px, 9vw, 56px);
+    font-weight: 200;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    margin: 14px 0 0;
+    text-transform: uppercase;
+  }
+  .pa-name .glow {
+    text-shadow: 0 0 18px rgba(126, 200, 255, 0.6);
+  }
+  .pa-name-ja {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: rgba(180, 220, 255, 0.55);
+    margin-top: 12px;
+  }
+  .pa-handle {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: #7ec8ff;
+    margin-top: 8px;
+  }
+  .pa-tagline {
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    line-height: 1.55;
+    max-width: 32ch;
+    margin: 28px 0 0;
+    color: rgba(226, 239, 255, 0.78);
+    font-weight: 300;
+  }
+  .pa-tagline-ja {
+    font-size: 11px;
+    color: rgba(180, 220, 255, 0.5);
+    margin: 8px 0 0;
+    line-height: 1.6;
+    max-width: 36ch;
+    word-break: auto-phrase;
+    line-break: strict;
+  }
+  .pa-coords {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 26px;
+    font-size: 10px;
+    color: rgba(180, 220, 255, 0.55);
+    letter-spacing: 0.14em;
+  }
+
+  /* Rail */
+  .pa-rail {
+    margin-top: 36px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(180, 220, 255, 0.12);
+  }
+  .pa-rail-h {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+  .pa-rail-h .l {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(180, 220, 255, 0.55);
+  }
+  .pa-rail-h .r {
+    font-size: 10px;
+    color: rgba(180, 220, 255, 0.4);
+  }
+
+  /* Links grid */
+  .pa-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+  }
+  .pa-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid rgba(180, 220, 255, 0.18);
+    background: rgba(5, 8, 14, 0.4);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    text-decoration: none;
+    color: rgba(200, 230, 255, 0.85);
+    transition: border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+    min-width: 0;
+  }
+  .pa-link:hover,
+  .pa-link:active {
+    border-color: #7ec8ff;
+    color: #7ec8ff;
+    box-shadow: 0 0 16px rgba(126, 200, 255, 0.3), inset 0 0 16px rgba(126, 200, 255, 0.08);
+  }
+  .pa-link .ic {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+  }
+  .pa-link .lab {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+  @media (min-width: 640px) {
+    .pa-links {
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    }
+    .pa-link .lab {
+      font-size: 12px;
+    }
+  }
+
+  /* Outputs timeline */
+  .pa-outputs {
+    border-left: 1px solid rgba(180, 220, 255, 0.18);
+    padding-left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .pa-out {
+    display: grid;
+    grid-template-columns: auto auto auto 1fr;
+    grid-template-rows: auto auto;
+    gap: 4px 10px;
+    align-items: baseline;
+    text-decoration: none;
+    color: #e2efff;
+    transition: color 0.18s ease;
+  }
+  .pa-out:hover .title,
+  .pa-out:hover .dot {
+    color: #7ec8ff;
+  }
+  .pa-out:hover .dot {
+    text-shadow: 0 0 8px #7ec8ff;
+  }
+  .pa-out .dot {
+    grid-row: 1;
+    font-size: 12px;
+    color: rgba(180, 220, 255, 0.7);
+    transition: color 0.18s ease, text-shadow 0.18s ease;
+  }
+  .pa-out .date {
+    grid-row: 1;
+    font-size: 10px;
+    color: rgba(180, 220, 255, 0.5);
+    letter-spacing: 0.14em;
+  }
+  .pa-out .badge {
+    grid-row: 1;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+  .pa-out .title {
+    grid-row: 1;
+    grid-column: 4;
+    font-size: 13px;
+    line-height: 1.4;
+    color: rgba(226, 239, 255, 0.95);
+  }
+  .pa-out .sub {
+    grid-row: 2;
+    grid-column: 4;
+    font-size: 10px;
+    color: rgba(180, 220, 255, 0.5);
+    letter-spacing: 0.04em;
+  }
+  .badge-article { color: #7ec8ff; }
+  .badge-talk    { color: #e8d27a; }
+  .badge-repo    { color: #7adcb0; }
+  .badge-slide   { color: #d99cff; }
+
+  /* Footer */
+  .pa-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 24px;
+    margin-top: 36px;
+    border-top: 1px solid rgba(180, 220, 255, 0.12);
+    font-size: 10px;
+    color: rgba(180, 220, 255, 0.5);
+    letter-spacing: 0.14em;
+  }
+</style>
