@@ -471,6 +471,23 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       }
     }
 
+    type Constellation = {
+      members: Particle[];
+      // 0: idle, 1: drawing, 2: hold, 3: fading
+      phase: 0 | 1 | 2 | 3;
+      progress: number;  // フェーズ内 0..1
+      nextAt: number;    // 次の発火時刻（t basis）
+    };
+    const constellation: Constellation = {
+      members: [],
+      phase: 0,
+      progress: 0,
+      nextAt: 3,  // 初回 3秒後
+    };
+    const CONST_DRAW = 1.5;   // 線描画にかける秒数
+    const CONST_HOLD = 1.0;
+    const CONST_FADE = 1.0;
+
     let raf = 0;
     let t = 0;
     function tick() {
@@ -589,7 +606,82 @@ const linkCount = String(LINKS.length).padStart(2, '0');
         }
       }
 
-      // ここに後続のレイヤーを追加していく
+      // ===== Layer F: Constellation =====
+      // dt は1フレーム ~16.7ms ≒ 0.0167秒。t は 0.008/frame の論理時間なので、実時間換算が必要。
+      // ここでは t を「秒の半分」と見なして扱いやすくする。
+      const tSec = t / 0.008 / 60; // 概ね経過秒数
+
+      if (constellation.phase === 0 && tSec >= constellation.nextAt) {
+        // 選出: ランダムに3〜5個
+        const memberCount = 3 + Math.floor(Math.random() * 3);
+        const pool = particles.slice();
+        for (let i = pool.length - 1; i > 0; i--) {
+          const k = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[k]] = [pool[k], pool[i]];
+        }
+        constellation.members = pool.slice(0, memberCount);
+        constellation.phase = 1;
+        constellation.progress = 0;
+      }
+
+      if (constellation.phase !== 0) {
+        // 1 frame 進行を秒換算: rAF 60fps 仮定で 1/60秒
+        constellation.progress += 1 / 60;
+        const m = constellation.members;
+        let alpha = 0;
+        if (constellation.phase === 1) {
+          // 線が伸びる: progress / CONST_DRAW で完成率
+          const ratio = Math.min(1, constellation.progress / CONST_DRAW);
+          alpha = 0.4 * ratio;
+          if (constellation.progress >= CONST_DRAW) {
+            constellation.phase = 2;
+            constellation.progress = 0;
+          }
+        } else if (constellation.phase === 2) {
+          alpha = 0.4;
+          if (constellation.progress >= CONST_HOLD) {
+            constellation.phase = 3;
+            constellation.progress = 0;
+          }
+        } else if (constellation.phase === 3) {
+          alpha = 0.4 * (1 - Math.min(1, constellation.progress / CONST_FADE));
+          if (constellation.progress >= CONST_FADE) {
+            constellation.phase = 0;
+            constellation.members = [];
+            constellation.nextAt = tSec + 8 + Math.random() * 2;
+          }
+        }
+
+        if (alpha > 0 && m.length >= 2) {
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(m[0].x, m[0].y);
+          // Layer F-描画範囲: phase=1 のとき progress 比に応じて部分的に伸ばす
+          const drawRatio =
+            constellation.phase === 1 ? Math.min(1, constellation.progress / CONST_DRAW) : 1;
+          const segCount = m.length - 1;
+          const drawnSegs = Math.floor(segCount * drawRatio);
+          const partialT = segCount * drawRatio - drawnSegs;
+          for (let i = 0; i < drawnSegs; i++) {
+            ctx.lineTo(m[i + 1].x, m[i + 1].y);
+          }
+          if (drawnSegs < segCount && partialT > 0) {
+            const a = m[drawnSegs];
+            const b = m[drawnSegs + 1];
+            ctx.lineTo(a.x + (b.x - a.x) * partialT, a.y + (b.y - a.y) * partialT);
+          }
+          ctx.stroke();
+
+          // メンバー粒子を強調表示（白い大きな点）
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 1.4})`;
+          for (const p of m) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r + 1.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
 
       raf = requestAnimationFrame(tick);
     }
