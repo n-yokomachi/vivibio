@@ -125,14 +125,14 @@ export const PROFILE = {
 [ヒーロー]    — signal received
               NAOKI YOKOMACHI   (glow + spaced)
               横町 直樹
-              @ yoko             (青mono · 0.3em)
+              @yoko              (青mono · letter-spacing 0.3em)
               bio (en) / bio (ja)
               35.6762°N · 139.6503°E · Software Engineer / AI Engineer
 [LINKS]       — links                         [ 19 ]
               icon + label タイル grid（auto-fill minmax 150px, gap 8px）
 [OUTPUTS]     — outputs                  2026.04.27
               縦タイムラインカード4枚（左に細い垂直ライン）
-              ◦ MM.DD · [BADGE] :: title  /  subtitle
+              ◦ 04.27 · [BADGE] :: title  /  subtitle  ← 04.27 は今日の MM.DD
 [Footer]      vivibio / @yoko          © 2026 ∞ vivibio
 ```
 
@@ -145,7 +145,7 @@ export const PROFILE = {
 - `padding: 60px 0 40px` のコンパクト中央寄せ（**Q3-B**）。`flex: 1` は使わず通常フロー
 - eyebrow `— signal received`
 - `<h1>` に `PROFILE.name` を `text-transform: uppercase`・letter-spacing 広めで描画
-- `nameJa`、`@ yoko`（青mono）の3段
+- `nameJa`、`@{PROFILE.handle}`（青mono、letter-spacing 0.3em）の3段
 - bio (en/ja) は `max-width: 32ch`
 - 座標バー: `35.6762°N · 139.6503°E · {PROFILE.title}`（東京固定値はテンプレートリテラルで埋め込み）
 
@@ -161,9 +161,10 @@ export const PROFILE = {
 - 縦並び 4 件、外枠 `border-left: 1px solid rgba(180,220,255,.18)`、`padding-left: 16px` でタイムライン感
 - 各 row 構造:
   ```
-  ◦  26.04 · [ARTICLE] :: タイトル
+  ◦  04.27 · [ARTICLE] :: タイトル
               subtitle (Zenn 等)
   ```
+- 行頭の日付は **今日の日付の MM.DD**（全4行同一・装飾扱い）。Glitch の `data-glitch-date` と同じ「今日の日付を毎行表示する」パターンを踏襲。OutputItem の schema には date 欄を追加しない
 - バッジ色: ARTICLE=青, TALK=黄, REPO=緑, SLIDE=マゼンタ（彩度を Glitch より下げてくすませる）
 - ホバー: 行全体の文字色が `#7ec8ff` に、`◦` マーカーが glow
 
