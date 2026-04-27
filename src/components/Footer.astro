@@ -1,9 +1,11 @@
 ---
+import { PROFILE } from '../data/profile.ts';
+
 const year = new Date().getFullYear();
 ---
 
 <footer class="mn-foot">
-  <span class="brand mn-mono">vivibio</span>
+  <span class="brand mn-mono">vivibio / @{PROFILE.handle}</span>
   <span class="mn-acc" aria-hidden="true">●</span>
   <span class="mn-mono">©{year}</span>
 </footer>
