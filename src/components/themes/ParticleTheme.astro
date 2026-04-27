@@ -8,6 +8,7 @@ const mm = String(now.getMonth() + 1).padStart(2, '0');
 const dd = String(now.getDate()).padStart(2, '0');
 const dateFull = `${yyyy}.${mm}.${dd}`;
 const dateMd = `${mm}.${dd}`;
+const dayPad = `0${dd}`;
 
 const linkCount = String(LINKS.length).padStart(2, '0');
 ---
@@ -17,7 +18,7 @@ const linkCount = String(LINKS.length).padStart(2, '0');
 
   <div class="pa-content">
     <header class="pa-top">
-      <span class="pa-mono pa-eye">VVB / 026</span>
+      <span class="pa-mono pa-eye">VVB / {dayPad}</span>
       <span class="pa-bracket" data-particle-bracket>
         <span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span>
       </span>
@@ -453,20 +454,44 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       }
     }
 
-    type Particle = { x: number; y: number; vx: number; vy: number; r: number; phase: number };
+    type Particle = {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      r: number;
+      phase: number;
+      tintR: number;
+      tintG: number;
+      tintB: number;
+    };
     const particles: Particle[] = [];
 
     function spawnParticles() {
-      const n = Math.floor((w * h) / 14000);
+      // 星雲を高密度の動くパーティクルで表現するため密度を約4倍に
+      const n = Math.floor((w * h) / 3500);
       particles.length = 0;
+      // 青白を主体に紫・薄マゼンタを混ぜて星雲の色ムラを表現
+      const palette: Array<[number, number, number]> = [
+        [200, 230, 255],
+        [200, 230, 255],
+        [200, 230, 255],
+        [180, 200, 255],
+        [200, 180, 240],
+        [240, 180, 220],
+      ];
       for (let i = 0; i < n; i++) {
+        const tint = palette[Math.floor(Math.random() * palette.length)];
         particles.push({
           x: Math.random() * w,
           y: Math.random() * h,
           vx: (Math.random() - 0.5) * 0.18,
           vy: (Math.random() - 0.5) * 0.18,
-          r: Math.random() * 1.2 + 0.4,
+          r: Math.random() * 1.1 + 0.3,
           phase: Math.random() * Math.PI * 2,
+          tintR: tint[0],
+          tintG: tint[1],
+          tintB: tint[2],
         });
       }
     }
@@ -517,34 +542,6 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       ctx.fillStyle = 'rgba(5, 8, 14, 0.18)';
       ctx.fillRect(0, 0, w, h);
 
-      // ===== Layer A: Nebula =====
-      // 2層のラジアルグラデーションで青紫＋紫マゼンタ。30秒周期で中心が動く。
-      const nebulaT = t * 0.05;
-      ctx.save();
-      ctx.globalCompositeOperation = 'screen';
-
-      // 青紫 nebula
-      const n1x = w * (0.5 + Math.cos(nebulaT) * 0.18);
-      const n1y = h * (0.42 + Math.sin(nebulaT * 0.7) * 0.12);
-      const g1 = ctx.createRadialGradient(n1x, n1y, 0, n1x, n1y, Math.max(w, h) * 0.5);
-      g1.addColorStop(0, 'rgba(126, 200, 255, 0.10)');
-      g1.addColorStop(0.4, 'rgba(90, 109, 255, 0.05)');
-      g1.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = g1;
-      ctx.fillRect(0, 0, w, h);
-
-      // 紫マゼンタ nebula（薄め）
-      const n2x = w * (0.5 + Math.cos(nebulaT * 0.6 + 1.7) * 0.22);
-      const n2y = h * (0.5 + Math.sin(nebulaT * 0.9 + 0.8) * 0.16);
-      const g2 = ctx.createRadialGradient(n2x, n2y, 0, n2x, n2y, Math.max(w, h) * 0.45);
-      g2.addColorStop(0, 'rgba(164, 93, 255, 0.06)');
-      g2.addColorStop(0.5, 'rgba(255, 93, 200, 0.03)');
-      g2.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = g2;
-      ctx.fillRect(0, 0, w, h);
-
-      ctx.restore();
-
       // ===== Layer B: Star field (twinkle) =====
       for (const s of stars) {
         const a = 0.3 + Math.sin(t * 1.2 + s.phase) * 0.4;
@@ -554,31 +551,9 @@ const linkCount = String(LINKS.length).padStart(2, '0');
         ctx.fill();
       }
 
-      // ===== Layer C: Core pulse ring =====
+      // 重力の中心（Layer D で参照）
       const cx = w / 2;
       const cy = h * 0.42;
-      const pulse = 0.6 + Math.sin(t * 1.5) * 0.4;
-
-      // 中央のグロー
-      const coreG = ctx.createRadialGradient(cx, cy, 0, cx, cy, 180);
-      coreG.addColorStop(0, `rgba(126, 200, 255, ${0.18 * pulse})`);
-      coreG.addColorStop(0.5, 'rgba(90, 140, 220, 0.05)');
-      coreG.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = coreG;
-      ctx.fillRect(0, 0, w, h);
-
-      // 内リング
-      ctx.strokeStyle = `rgba(180, 220, 255, ${0.4 * pulse})`;
-      ctx.lineWidth = 0.6;
-      ctx.beginPath();
-      ctx.arc(cx, cy, 60 + pulse * 6, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // 外リング
-      ctx.strokeStyle = 'rgba(180, 220, 255, 0.15)';
-      ctx.beginPath();
-      ctx.arc(cx, cy, 100, 0, Math.PI * 2);
-      ctx.stroke();
 
       // ===== Layer D: Particle field (drift + gravity to core) =====
       for (const p of particles) {
@@ -609,15 +584,16 @@ const linkCount = String(LINKS.length).padStart(2, '0');
         if (p.y > h) p.y -= h;
 
         const a = 0.45 + Math.sin(t * 2 + p.phase) * 0.3;
-        ctx.fillStyle = `rgba(200, 230, 255, ${Math.max(0, a)})`;
+        ctx.fillStyle = `rgba(${p.tintR}, ${p.tintG}, ${p.tintB}, ${Math.max(0, a)})`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fill();
       }
 
       // ===== Layer E: Connection lines =====
-      ctx.lineWidth = 0.4;
-      const LINK_DIST = 90;
+      // 高密度化に伴い線が混みやすいので閾値・透明度を控えめに
+      ctx.lineWidth = 0.35;
+      const LINK_DIST = 70;
       const LINK_DIST2 = LINK_DIST * LINK_DIST;
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
@@ -625,7 +601,7 @@ const linkCount = String(LINKS.length).padStart(2, '0');
           const dy = particles[i].y - particles[j].y;
           const d2 = dx * dx + dy * dy;
           if (d2 < LINK_DIST2) {
-            const a = 0.18 * (1 - Math.sqrt(d2) / LINK_DIST);
+            const a = 0.10 * (1 - Math.sqrt(d2) / LINK_DIST);
             ctx.strokeStyle = `rgba(120, 180, 240, ${a})`;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
