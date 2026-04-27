@@ -488,6 +488,25 @@ const linkCount = String(LINKS.length).padStart(2, '0');
     const CONST_HOLD = 1.0;
     const CONST_FADE = 1.0;
 
+    let mouse = { x: -9999, y: -9999, active: false };
+    const MOUSE_REPEL_RADIUS = 100;
+    const MOUSE_REPEL_FORCE = 0.4;
+
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const x = (e as TouchEvent).touches?.[0]?.clientX ?? (e as MouseEvent).clientX;
+      const y = (e as TouchEvent).touches?.[0]?.clientY ?? (e as MouseEvent).clientY;
+      if (typeof x === 'number' && typeof y === 'number') {
+        mouse = { x, y, active: true };
+      }
+    };
+    const onLeave = () => {
+      mouse.active = false;
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: true });
+    window.addEventListener('touchend', onLeave);
+    window.addEventListener('mouseleave', onLeave);
+
     let raf = 0;
     let t = 0;
     function tick() {
@@ -568,6 +587,16 @@ const linkCount = String(LINKS.length).padStart(2, '0');
         const d = Math.hypot(dx, dy) + 0.1;
         p.vx += (dx / d) * 0.0015;
         p.vy += (dy / d) * 0.0015;
+
+        if (mouse.active) {
+          const mdx = p.x - mouse.x;
+          const mdy = p.y - mouse.y;
+          const md = Math.hypot(mdx, mdy);
+          if (md < MOUSE_REPEL_RADIUS && md > 0.1) {
+            p.vx += (mdx / md) * MOUSE_REPEL_FORCE * (1 - md / MOUSE_REPEL_RADIUS);
+            p.vy += (mdy / md) * MOUSE_REPEL_FORCE * (1 - md / MOUSE_REPEL_RADIUS);
+          }
+        }
 
         p.vx *= 0.97;
         p.vy *= 0.97;
