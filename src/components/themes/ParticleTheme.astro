@@ -388,3 +388,94 @@ const linkCount = String(LINKS.length).padStart(2, '0');
     letter-spacing: 0.14em;
   }
 </style>
+
+<script>
+  function initParticleEffects() {
+    if ((window as any).__particleInited) return;
+    (window as any).__particleInited = true;
+
+    // ----- Clock + bracket signal -----
+    const clockEl = document.querySelector<HTMLElement>('[data-particle-clock]');
+    if (clockEl) {
+      const tick = () => {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        clockEl.textContent = `${hh}:${mm}:${ss}`;
+      };
+      tick();
+      setInterval(tick, 1000);
+    }
+
+    const bracket = document.querySelector<HTMLElement>('[data-particle-bracket]');
+    if (bracket) {
+      const dots = Array.from(bracket.querySelectorAll<HTMLElement>('span'));
+      let bIdx = 0;
+      setInterval(() => {
+        dots.forEach((d, i) => d.classList.toggle('on', i === bIdx || i === (bIdx + 2) % 5 || i === (bIdx + 4) % 5));
+        bIdx = (bIdx + 1) % 5;
+      }, 500);
+    }
+
+    // ----- Canvas init -----
+    const canvas = document.querySelector<HTMLCanvasElement>('.pa-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    let w = 0;
+    let h = 0;
+
+    function resize() {
+      if (!canvas || !ctx) return;
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    let raf = 0;
+    let t = 0;
+    function tick() {
+      if (!ctx) return;
+      t += 0.008;
+
+      // 軽いトレイル効果のための半透明クリア
+      ctx.fillStyle = 'rgba(5, 8, 14, 0.18)';
+      ctx.fillRect(0, 0, w, h);
+
+      // ここに後続のレイヤーを追加していく
+
+      raf = requestAnimationFrame(tick);
+    }
+
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(canvas);
+
+    resize();
+    raf = requestAnimationFrame(tick);
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        cancelAnimationFrame(raf);
+      } else {
+        raf = requestAnimationFrame(tick);
+      }
+    });
+  }
+
+  if (document.documentElement.dataset.theme === 'particle') {
+    initParticleEffects();
+  } else {
+    const observer = new MutationObserver(() => {
+      if (document.documentElement.dataset.theme === 'particle') {
+        initParticleEffects();
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+</script>
