@@ -51,14 +51,22 @@ const gridCoord = (i: number) => {
     <span class="cc-tape t2" />
     <div class="cc-scrap-h">FACADE — NORTH</div>
     <div class="cc-scrap-meta">SK-04 / 1:50</div>
-    <div class="cc-scrap-note">check void above<br />opening — verify<br />head height 2100</div>
+    <div class="cc-scrap-note">
+      <span class="cc-line">check void above</span>
+      <span class="cc-line">opening — verify</span>
+      <span class="cc-line">head height 2100</span>
+    </div>
   </div>
 
   <div class="cc-scrap s2" aria-hidden="true">
     <span class="cc-tape t1" />
     <div class="cc-scrap-h">ROOF — PLAN</div>
     <div class="cc-scrap-meta">A-205 / rev. 01</div>
-    <div class="cc-scrap-note">parapet 600<br />slope 1:50 ok?<br />drain at NE corner</div>
+    <div class="cc-scrap-note">
+      <span class="cc-line">parapet 600</span>
+      <span class="cc-line">slope 1:50 ok?</span>
+      <span class="cc-line">drain at NE corner</span>
+    </div>
   </div>
 
   <div class="cc-scrap s3" aria-hidden="true">
@@ -66,7 +74,11 @@ const gridCoord = (i: number) => {
     <span class="cc-tape t2" />
     <div class="cc-scrap-h">STAIR — SECTION</div>
     <div class="cc-scrap-meta">SK-11 / 1:20</div>
-    <div class="cc-scrap-note">14 risers ok?<br />180 × 260 typ.<br />handrail @ 850</div>
+    <div class="cc-scrap-note">
+      <span class="cc-line">14 risers ok?</span>
+      <span class="cc-line">180 × 260 typ.</span>
+      <span class="cc-line">handrail @ 850</span>
+    </div>
   </div>
 
   <div class="cc-ruler" aria-hidden="true">
@@ -499,8 +511,8 @@ const gridCoord = (i: number) => {
 
   /* Compass arm — radial line rotating around the datum */
   .cc-construct .cc-arm {
+    transform-box: view-box;
     transform-origin: 720px 380px;
-    transform-box: fill-box;
     animation: cc-arm-rotate 24s linear infinite;
     opacity: 0.7;
   }
@@ -531,15 +543,27 @@ const gridCoord = (i: number) => {
     to   { opacity: 1; }
   }
 
-  /* Datum point — gentle pulse around compass center */
+  /* Datum point — gentle pulse around compass center.
+     Pulses are amplified via a halo ring so the motion is visible at viewBox scale. */
   .cc-construct .cc-datum {
+    transform-box: view-box;
     transform-origin: 720px 380px;
-    transform-box: fill-box;
     animation: cc-datum-pulse 3.2s ease-in-out infinite;
   }
   @keyframes cc-datum-pulse {
     0%, 100% { transform: scale(1);   opacity: 1; }
-    50%      { transform: scale(1.45); opacity: 0.6; }
+    50%      { transform: scale(1.85); opacity: 0.55; }
+  }
+  /* Outward expanding halo — repurposes the outline circle for visibility */
+  .cc-construct .cc-datum circle:nth-of-type(2) {
+    transform-box: view-box;
+    transform-origin: 720px 380px;
+    animation: cc-datum-halo 3.2s ease-out infinite;
+  }
+  @keyframes cc-datum-halo {
+    0%   { transform: scale(0.8); opacity: 0.6; }
+    70%  { transform: scale(2.6); opacity: 0; }
+    100% { transform: scale(2.6); opacity: 0; }
   }
 
   /* Cursor crosshair — thin guide lines following pointer over the rulers */
@@ -1053,17 +1077,26 @@ const gridCoord = (i: number) => {
   }
   .cc-room:hover .swing,
   .cc-room:focus-visible .swing {
-    opacity: 0.65;
+    opacity: 1;
   }
-  /* Inner arc draws in on hover/focus, like the door opening */
+  /* Inner arc draws in on hover/focus like a door opening — rust accent + thicker stroke */
   .cc-room .swing path:nth-of-type(3) {
     stroke-dasharray: 50;
     stroke-dashoffset: 50;
-    transition: stroke-dashoffset 0.45s ease-out;
+    stroke-width: 1.5 !important;
+    transition: stroke-dashoffset 0.7s ease-out, stroke 0.2s ease;
   }
   .cc-room:hover .swing path:nth-of-type(3),
   .cc-room:focus-visible .swing path:nth-of-type(3) {
     stroke-dashoffset: 0;
+    stroke: var(--rust);
+    opacity: 1;
+  }
+  /* Outer dashed boundary becomes more prominent too */
+  .cc-room:hover .swing path:nth-of-type(2),
+  .cc-room:focus-visible .swing path:nth-of-type(2) {
+    stroke: var(--paper);
+    opacity: 0.9;
   }
 
   .cc-room .hatch {
@@ -1323,18 +1356,30 @@ const gridCoord = (i: number) => {
     line-height: 1.35;
     color: rgba(138, 58, 31, 0.65);
     transform: rotate(-1deg);
-    /* Handwriting cycle: write left→right, hold, erase left→right, pause */
-    animation: cc-handwrite 18s ease-in-out infinite;
-    clip-path: inset(0 100% 0 0);
   }
-  .cc-scrap.s2 .cc-scrap-note { animation-delay: 6s; }
-  .cc-scrap.s3 .cc-scrap-note { animation-delay: 12s; }
-  @keyframes cc-handwrite {
-    0%   { clip-path: inset(0 100% 0 0); }   /* erased */
-    18%  { clip-path: inset(0 0 0 0); }      /* fully written */
-    55%  { clip-path: inset(0 0 0 0); }      /* hold */
-    78%  { clip-path: inset(0 0 0 100%); }   /* erased L→R */
-    100% { clip-path: inset(0 100% 0 0); }   /* pause off-screen */
+  /* Each line is written character-stutter style via steps() on clip-path.
+     Lines stagger so they appear sequentially, like writing top-to-bottom. */
+  .cc-scrap-note .cc-line {
+    display: block;
+    clip-path: inset(0 100% 0 0);
+    animation: cc-handwrite-line 21s steps(28, end) infinite;
+  }
+  .cc-scrap-note .cc-line:nth-of-type(1) { animation-delay: 0s; }
+  .cc-scrap-note .cc-line:nth-of-type(2) { animation-delay: 1.4s; }
+  .cc-scrap-note .cc-line:nth-of-type(3) { animation-delay: 2.8s; }
+  .cc-scrap.s2 .cc-line:nth-of-type(1) { animation-delay: 7s; }
+  .cc-scrap.s2 .cc-line:nth-of-type(2) { animation-delay: 8.4s; }
+  .cc-scrap.s2 .cc-line:nth-of-type(3) { animation-delay: 9.8s; }
+  .cc-scrap.s3 .cc-line:nth-of-type(1) { animation-delay: 14s; }
+  .cc-scrap.s3 .cc-line:nth-of-type(2) { animation-delay: 15.4s; }
+  .cc-scrap.s3 .cc-line:nth-of-type(3) { animation-delay: 16.8s; }
+  /* 21s cycle: 0-15% reveal char-by-char (~3s), 15-65% hold, 65-72% erase L→R, 72-100% blank */
+  @keyframes cc-handwrite-line {
+    0%   { clip-path: inset(0 100% 0 0); }
+    15%  { clip-path: inset(0 0 0 0); }
+    65%  { clip-path: inset(0 0 0 0); }
+    72%  { clip-path: inset(0 0 0 100%); }
+    100% { clip-path: inset(0 100% 0 0); }
   }
 
   /* Masking-tape strips */
@@ -1417,13 +1462,14 @@ const gridCoord = (i: number) => {
     .cc-construct svg > *,
     .cc-construct .cc-arm,
     .cc-construct .cc-datum,
+    .cc-construct .cc-datum circle:nth-of-type(2),
     .cc-pour,
-    .cc-scrap-note,
+    .cc-scrap-note .cc-line,
     .cc-room .swing path:nth-of-type(3) {
       animation: none !important;
       transition: none !important;
     }
-    .cc-scrap-note { clip-path: none; }
+    .cc-scrap-note .cc-line { clip-path: none; }
     .cc-cursor-h,
     .cc-cursor-v { display: none; }
   }
