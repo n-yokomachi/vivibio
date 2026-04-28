@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import MinimalTheme from '../components/themes/MinimalTheme.astro';
 import GlitchTheme from '../components/themes/GlitchTheme.astro';
 import ParticleTheme from '../components/themes/ParticleTheme.astro';
+import ConcreteTheme from '../components/themes/ConcreteTheme.astro';
 import ThemeSwitcher from '../components/ThemeSwitcher.astro';
 ---
 
@@ -15,6 +16,9 @@ import ThemeSwitcher from '../components/ThemeSwitcher.astro';
   </main>
   <main class="theme-pane" data-theme="particle">
     <ParticleTheme />
+  </main>
+  <main class="theme-pane" data-theme="concrete">
+    <ConcreteTheme />
   </main>
   <ThemeSwitcher />
 </BaseLayout>

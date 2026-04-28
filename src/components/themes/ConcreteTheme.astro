@@ -1,0 +1,44 @@
+---
+import { PROFILE, LINKS, OUTPUTS } from '../../data/profile.ts';
+---
+
+<div class="cc">
+  <div class="cc-stage">
+    <h1>CONCRETE</h1>
+    <p>{PROFILE.name}</p>
+  </div>
+</div>
+
+<style>
+  .cc {
+    --paper: #e8e2d6;
+    --paper-2: #ddd5c5;
+    --concrete: #b6ad9e;
+    --concrete-2: #8b8273;
+    --ink: #1a1815;
+    --ink-soft: #4a463f;
+    --rule: #2a2620;
+    --rust: #8a3a1f;
+    --shadow: rgba(40, 32, 20, 0.14);
+
+    position: relative;
+    min-height: 100vh;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', 'Helvetica Neue', sans-serif;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .cc-stage {
+    position: relative;
+    z-index: 5;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 56px 40px 80px;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+</style>
