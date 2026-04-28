@@ -664,9 +664,8 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       if (!ctx) return;
       t += 0.008;
 
-      // 軽いトレイル効果のための半透明クリア
-      ctx.fillStyle = 'rgba(5, 8, 14, 0.18)';
-      ctx.fillRect(0, 0, w, h);
+      // 完全クリア(残像を残さない・body 背景 #05080e がそのまま見える)
+      ctx.clearRect(0, 0, w, h);
 
       // ===== Layer B-move: 星のゆるやかな漂い更新（動的な星座網のための前段）=====
       for (const s of stars) {
