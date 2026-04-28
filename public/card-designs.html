@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VIVIBIO — NFC Card Designs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --card-w: 480px;
+      --card-h: 303px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: #2a2a2e;
+      color: #e8e2d6;
+      font-family: 'Inter', system-ui, sans-serif;
+      padding: 56px 32px 96px;
+      min-height: 100vh;
+    }
+    .container { max-width: 1120px; margin: 0 auto; }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin: 0 0 6px;
+    }
+    .lead {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      opacity: 0.55;
+      margin: 0 0 56px;
+    }
+
+    .design-head {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      padding: 3px 8px;
+      border: 1px solid rgba(232, 226, 214, 0.25);
+      border-radius: 3px;
+      color: rgba(232, 226, 214, 0.85);
+    }
+    .design-name { font-size: 20px; font-weight: 700; letter-spacing: 0.01em; }
+    .design-desc {
+      font-size: 13px;
+      opacity: 0.6;
+      line-height: 1.65;
+      max-width: 720px;
+      margin: 6px 0 28px;
+    }
+
+    .card-row { display: flex; gap: 28px; flex-wrap: wrap; }
+    .card-wrap { position: relative; }
+    .card-wrap .label {
+      position: absolute;
+      top: -22px; left: 0;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      opacity: 0.45;
+    }
+    .card {
+      width: var(--card-w);
+      height: var(--card-h);
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 26px 60px rgba(0, 0, 0, 0.45),
+        0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    /* ───────── FRONT (MINIMAL) ───────── */
+    .card-minimal {
+      background: #f7f6f3;
+      color: #1a1a1a;
+      padding: 28px 34px 26px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-family: 'Inter', sans-serif;
+      position: relative;
+    }
+    .minimal-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      letter-spacing: 0.16em;
+      color: rgba(26, 26, 26, 0.55);
+      text-transform: uppercase;
+    }
+    .minimal-mid {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .minimal-name {
+      font-size: 50px;
+      font-weight: 800;
+      line-height: 0.96;
+      letter-spacing: -0.025em;
+    }
+    .minimal-name .given,
+    .minimal-name .surname { display: block; }
+    .dotted-i {
+      position: relative;
+      display: inline-block;
+    }
+    /* Layer trick: render an identical orange "i" on top of the black one,
+       then clip-path it to reveal only the tittle region.
+       The font itself draws the dot — positioning is automatic, sub-pixel-perfect. */
+    .dotted-i .i-color {
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: #ff5733;
+      /* show only top 0.24em (= 12px @ 50px font, line-height 0.96)
+         — this includes the i-tittle (y=2.5 to 10.5) plus the gap above stem (y=10.5 to 13.5) */
+      clip-path: inset(0 0 0.72em 0);
+      pointer-events: none;
+      user-select: none;
+    }
+    .minimal-qr {
+      width: 78px;
+      height: 78px;
+      flex-shrink: 0;
+    }
+    .minimal-qr img { width: 100%; height: 100%; display: block; }
+    .minimal-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: rgba(26, 26, 26, 0.85);
+    }
+    .minimal-tap { display: flex; align-items: center; gap: 10px; }
+    .minimal-rule {
+      width: 28px; height: 1.5px;
+      background: #ff5733;
+      display: inline-block;
+    }
+
+    /* ───────── BACK (GLITCH) ───────── */
+    .card-back-glitch {
+      background: #07010d;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 22px 26px;
+      font-family: 'Inter', sans-serif;
+      position: relative;
+    }
+    .back-top {
+      position: relative; z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .back-top .name {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: #fff;
+      font-weight: 500;
+    }
+    .back-top .role {
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      color: rgba(255, 255, 255, 0.55);
+      text-transform: uppercase;
+    }
+    .back-mid {
+      position: relative; z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .vvv-row {
+      font-family: 'Inter', sans-serif;
+      font-weight: 900;
+      font-size: 90px;
+      line-height: 0.85;
+      letter-spacing: -7px;
+      margin: 0;
+    }
+    .vvv-row span { display: inline-block; }
+    .vvv-row .pink { color: #ff2d8d; text-shadow: 0 0 20px rgba(255, 45, 141, 0.4); }
+    .vvv-row .cyan { color: #16f0ff; text-shadow: 0 0 20px rgba(22, 240, 255, 0.4); }
+    .vvv-row .white { color: #fff; }
+    .qr-inset {
+      background: #fff;
+      padding: 5px;
+      border-radius: 3px;
+      width: 78px;
+      height: 78px;
+      flex-shrink: 0;
+      position: relative;
+      box-shadow:
+        -3px 0 0 rgba(255, 45, 141, 0.9),
+        3px 0 0 rgba(22, 240, 255, 0.9);
+    }
+    .qr-inset::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      pointer-events: none;
+      background:
+        linear-gradient(#16f0ff, #16f0ff) top left/10px 1px no-repeat,
+        linear-gradient(#16f0ff, #16f0ff) top left/1px 10px no-repeat,
+        linear-gradient(#ff2d8d, #ff2d8d) bottom right/10px 1px no-repeat,
+        linear-gradient(#ff2d8d, #ff2d8d) bottom right/1px 10px no-repeat;
+    }
+    .qr-inset img { width: 100%; height: 100%; display: block; }
+    .back-bottom {
+      position: relative; z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+    }
+    .back-bottom .tap {
+      color: #16f0ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+    .back-bottom .url {
+      color: #ff2d8d;
+      font-weight: 700;
+    }
+    .nfc-icon { width: 14px; height: 14px; }
+
+    /* easter egg — auqlue · 42, very subtle */
+    .easter {
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 6.5px;
+      letter-spacing: 0.22em;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .card-back-glitch .easter { color: rgba(255, 255, 255, 0.13); }
+    .card-minimal .easter { color: rgba(26, 26, 26, 0.18); }
+
+    /* responsive */
+    @media (max-width: 560px) {
+      :root {
+        --card-w: min(94vw, 440px);
+        --card-h: calc(min(94vw, 440px) / 1.586);
+      }
+      body { padding: 32px 16px 64px; }
+      .card-row { gap: 36px; }
+      .vvv-row { font-size: 18vw; }
+      .minimal-name { font-size: 11vw; }
+      .qr-inset, .minimal-qr { width: 16vw; height: 16vw; max-width: 78px; max-height: 78px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>VIVIBIO — NFC Card Sticker</h1>
+    <p class="lead">OMOTE-URA HYBRID · 85.6 × 54mm · ~6× preview · for n-yokomachi · vivibio.pages.dev</p>
+
+    <section class="design">
+      <div class="design-head">
+        <span class="tag">CASE E</span>
+        <span class="design-name">OMOTE-URA HYBRID — 表裏で化ける</span>
+      </div>
+      <p class="design-desc">表は端正なミニマル、裏でキャラを出すグリッチ。フォーマル/カジュアル両対応。</p>
+
+      <div class="card-row">
+        <!-- FRONT -->
+        <div class="card-wrap">
+          <span class="label">FRONT</span>
+          <div class="card card-minimal">
+            <span class="easter">auqlue · 42</span>
+            <div class="minimal-meta">SOFTWARE / AI ENGINEER · TOKYO</div>
+            <div class="minimal-mid">
+              <div class="minimal-name">
+                <span class="given">Naok<span class="dotted-i">i<span class="i-color" aria-hidden="true">i</span></span></span>
+                <span class="surname">Yokomach<span class="dotted-i">i<span class="i-color" aria-hidden="true">i</span></span></span>
+              </div>
+              <div class="minimal-qr">
+                <img
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=https%3A%2F%2Fvivibio.pages.dev&amp;margin=0&amp;qzone=0&amp;color=1a1a1a&amp;bgcolor=f7f6f3"
+                  alt="QR · vivibio.pages.dev"
+                />
+              </div>
+            </div>
+            <div class="minimal-foot">
+              <span class="minimal-tap"><span class="minimal-rule"></span> tap or scan</span>
+              <span>vivibio.pages.dev</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- BACK -->
+        <div class="card-wrap">
+          <span class="label">BACK</span>
+          <div class="card card-back-glitch">
+            <span class="easter">auqlue · 42</span>
+            <div class="back-top">
+              <div class="name">NAOKI YOKOMACHI</div>
+              <div class="role">SOFTWARE / AI ENGINEER · TOKYO</div>
+            </div>
+            <div class="back-mid">
+              <div class="vvv-row">
+                <span class="pink">V</span><span class="cyan">V</span><span class="white">B</span>
+              </div>
+              <div class="qr-inset" title="vivibio.pages.dev">
+                <img
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=https%3A%2F%2Fvivibio.pages.dev&amp;margin=0&amp;qzone=0"
+                  alt="QR · vivibio.pages.dev"
+                />
+              </div>
+            </div>
+            <div class="back-bottom">
+              <span class="tap">
+                <svg class="nfc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M5 12a7 7 0 0 1 14 0" />
+                  <path d="M8.5 12a3.5 3.5 0 0 1 7 0" />
+                  <circle cx="12" cy="12" r="1.4" fill="currentColor" />
+                </svg>
+                TAP / SCAN
+              </span>
+              <span class="url">vivibio.pages.dev</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
