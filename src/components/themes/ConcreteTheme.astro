@@ -798,6 +798,10 @@ const gridCoord = (i: number) => {
     border: 1.5px solid var(--rule);
     position: relative;
   }
+  .cc-plan-grid::after {
+    content: '';
+    background: var(--paper);
+  }
   @media (max-width: 720px) {
     .cc-plan-grid {
       grid-template-columns: repeat(2, 1fr);
