@@ -976,15 +976,22 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
           raf = requestAnimationFrame(tick);
         }
 
-        const ro = new ResizeObserver(() => {
-          resize();
-          spawn();
-        });
-        ro.observe(canvas);
-
         resize();
         spawn();
+        let lastW = w;
         tick();
+
+        // Mobile では URL バー折りたたみで viewport 高さだけ変わって再発火するため、
+        // 幅が大きく変わったとき (オリエンテーション変更/ウィンドウリサイズ) だけ
+        // 粒子を再生成する。高さ変化だけのときは canvas dims のみ更新して粒子は維持。
+        const ro = new ResizeObserver(() => {
+          resize();
+          if (Math.abs(w - lastW) > 60) {
+            lastW = w;
+            spawn();
+          }
+        });
+        ro.observe(canvas);
 
         // Pause animation when tab is hidden to save CPU
         document.addEventListener('visibilitychange', () => {

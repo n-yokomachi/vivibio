@@ -846,17 +846,24 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       raf = requestAnimationFrame(tick);
     }
 
-    const ro = new ResizeObserver(() => {
-      resize();
-      spawnStars();
-      spawnParticles();
-    });
-    ro.observe(canvas);
-
     resize();
     spawnStars();
     spawnParticles();
+    let lastW = w;
     raf = requestAnimationFrame(tick);
+
+    // Mobile では URL バー折りたたみで viewport 高さだけ変わって再発火するため、
+    // 幅が大きく変わったとき (オリエンテーション変更/ウィンドウリサイズ) だけ
+    // 粒子を再生成する。高さ変化だけのときは canvas dims のみ更新して粒子は維持。
+    const ro = new ResizeObserver(() => {
+      resize();
+      if (Math.abs(w - lastW) > 60) {
+        lastW = w;
+        spawnStars();
+        spawnParticles();
+      }
+    });
+    ro.observe(canvas);
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
