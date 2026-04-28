@@ -3,6 +3,7 @@ export type LinkItem = {
   label: string;
   handle: string;
   url: string;
+  category: 'code' | 'social' | 'writing' | 'talks' | 'creds' | 'design' | 'self' | 'contact';
 };
 
 export type OutputItem = {
@@ -27,25 +28,25 @@ export const PROFILE = {
 } as const;
 
 export const LINKS: LinkItem[] = [
-  { id: 'github',      label: 'GitHub',          handle: 'n-yokomachi',         url: 'https://github.com/n-yokomachi' },
-  { id: 'x',           label: 'X',               handle: '@_cityside',          url: 'https://twitter.com/_cityside' },
-  { id: 'huggingface', label: 'HuggingFace',     handle: 'yokomachi',           url: 'https://huggingface.co/yokomachi' },
-  { id: 'zenn',        label: 'Zenn',            handle: 'yokomachi',           url: 'https://zenn.dev/yokomachi' },
-  { id: 'qiita',       label: 'Qiita',           handle: 'yokomachi',           url: 'https://qiita.com/yokomachi' },
-  { id: 'devto',       label: 'Dev.to',          handle: 'yokomachi',           url: 'https://dev.to/yokomachi' },
-  { id: 'speakerdeck', label: 'SpeakerDeck',     handle: 'yokomachi',           url: 'https://speakerdeck.com/yokomachi' },
-  { id: 'linkedin',    label: 'LinkedIn',        handle: 'in/yokomachi',        url: 'https://www.linkedin.com/in/yokomachi/' },
-  { id: 'credly',      label: 'Credly',          handle: 'yokomachi',           url: 'https://www.credly.com/users/yokomachi' },
-  { id: 'lapras',      label: 'Lapras',          handle: 'yokomachi',           url: 'https://lapras.com/public/yokomachi' },
-  { id: 'connpass',    label: 'Connpass',        handle: 'duplicate1984',       url: 'https://connpass.com/user/duplicate1984/' },
-  { id: 'figma',       label: 'Figma',           handle: '@yokomachi',          url: 'https://www.figma.com/@yokomachi' },
-  { id: '16p',         label: '16Personalities', handle: 'profile',             url: 'https://www.16personalities.com/ja/%E3%83%97%E3%83%AD%E3%83%95%E3%82%A3%E3%83%BC%E3%83%AB/ffd619bb32c18' },
-  { id: 'duolingo',    label: 'Duolingo',        handle: 'yokomachi1',          url: 'https://www.duolingo.com/profile/yokomachi1' },
-  { id: 'bukulog',     label: 'ブクログ',         handle: 'yokomachi1',          url: 'https://booklog.jp/users/yokomachi1' },
-  { id: 'filmarks',    label: 'Filmarks',        handle: 'yokomachi',           url: 'https://filmarks.com/users/yokomachi' },
-  { id: 'discord',     label: 'Discord',         handle: 'yokomachi',           url: 'https://discordapp.com/users/750727153871618069' },
-  { id: 'atcoder',     label: 'AtCoder',         handle: 'yokomachi',           url: 'https://atcoder.jp/users/yokomachi' },
-  { id: 'email',       label: 'Email',           handle: 'asterism.mihono',     url: 'mailto:asterism.mihono@gmail.com' },
+  { id: 'github',      label: 'GitHub',          handle: 'n-yokomachi',         url: 'https://github.com/n-yokomachi',                                                                          category: 'code'    },
+  { id: 'x',           label: 'X',               handle: '@_cityside',          url: 'https://twitter.com/_cityside',                                                                           category: 'social'  },
+  { id: 'huggingface', label: 'HuggingFace',     handle: 'yokomachi',           url: 'https://huggingface.co/yokomachi',                                                                        category: 'code'    },
+  { id: 'zenn',        label: 'Zenn',            handle: 'yokomachi',           url: 'https://zenn.dev/yokomachi',                                                                              category: 'writing' },
+  { id: 'qiita',       label: 'Qiita',           handle: 'yokomachi',           url: 'https://qiita.com/yokomachi',                                                                             category: 'writing' },
+  { id: 'devto',       label: 'Dev.to',          handle: 'yokomachi',           url: 'https://dev.to/yokomachi',                                                                                category: 'writing' },
+  { id: 'speakerdeck', label: 'SpeakerDeck',     handle: 'yokomachi',           url: 'https://speakerdeck.com/yokomachi',                                                                       category: 'talks'   },
+  { id: 'linkedin',    label: 'LinkedIn',        handle: 'in/yokomachi',        url: 'https://www.linkedin.com/in/yokomachi/',                                                                  category: 'social'  },
+  { id: 'credly',      label: 'Credly',          handle: 'yokomachi',           url: 'https://www.credly.com/users/yokomachi',                                                                  category: 'creds'   },
+  { id: 'lapras',      label: 'Lapras',          handle: 'yokomachi',           url: 'https://lapras.com/public/yokomachi',                                                                     category: 'creds'   },
+  { id: 'connpass',    label: 'Connpass',        handle: 'duplicate1984',       url: 'https://connpass.com/user/duplicate1984/',                                                                category: 'talks'   },
+  { id: 'figma',       label: 'Figma',           handle: '@yokomachi',          url: 'https://www.figma.com/@yokomachi',                                                                        category: 'design'  },
+  { id: '16p',         label: '16Personalities', handle: 'profile',             url: 'https://www.16personalities.com/ja/%E3%83%97%E3%83%AD%E3%83%95%E3%82%A3%E3%83%BC%E3%83%AB/ffd619bb32c18', category: 'self'    },
+  { id: 'duolingo',    label: 'Duolingo',        handle: 'yokomachi1',          url: 'https://www.duolingo.com/profile/yokomachi1',                                                             category: 'self'    },
+  { id: 'bukulog',     label: 'ブクログ',         handle: 'yokomachi1',          url: 'https://booklog.jp/users/yokomachi1',                                                                     category: 'self'    },
+  { id: 'filmarks',    label: 'Filmarks',        handle: 'yokomachi',           url: 'https://filmarks.com/users/yokomachi',                                                                    category: 'self'    },
+  { id: 'discord',     label: 'Discord',         handle: 'yokomachi',           url: 'https://discordapp.com/users/750727153871618069',                                                         category: 'social'  },
+  { id: 'atcoder',     label: 'AtCoder',         handle: 'yokomachi',           url: 'https://atcoder.jp/users/yokomachi',                                                                      category: 'code'    },
+  { id: 'email',       label: 'Email',           handle: 'asterism.mihono',     url: 'mailto:asterism.mihono@gmail.com',                                                                        category: 'contact' },
 ];
 
 export const OUTPUTS: OutputItem[] = [
