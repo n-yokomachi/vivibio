@@ -271,6 +271,26 @@ const gridCoord = (i: number) => {
         ))}
       </div>
     </div>
+
+    <div class="cc-foot">
+      <div class="cc-foot-left">
+        <div><b>VIVIBIO</b> · NFC PROFILE · @{PROFILE.handle}</div>
+        <div>MATERIAL: PLASTER + CONCRETE / 漆喰・コンクリート</div>
+        <div>FINISH: BOARD-FORMED, BRUSHED</div>
+      </div>
+      <div class="cc-foot-stamp">
+        <div>SHEET <b>A-101</b></div>
+        <div>OF 04</div>
+        <div>DRAWN BY <b>@{PROFILE.handle}</b></div>
+        <div><span data-cc-clock>--:--</span> · UTC+09</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cc-readout" data-cc-readout>
+    <span class="pip" />
+    <span class="text"></span>
+    <span class="url"></span>
   </div>
 </div>
 
@@ -1000,6 +1020,74 @@ const gridCoord = (i: number) => {
     color: var(--ink-soft);
     margin-top: 3px;
     letter-spacing: 0.04em;
+  }
+
+  /* FOOTER */
+  .cc-foot {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: end;
+    padding-top: 24px;
+    border-top: 1.5px solid var(--rule);
+  }
+  .cc-foot-left {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+  .cc-foot-left b {
+    color: var(--ink);
+  }
+  .cc-foot-stamp {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-align: right;
+    line-height: 1.7;
+  }
+  .cc-foot-stamp b {
+    color: var(--ink);
+  }
+
+  /* Hover readout — concrete plaque popup */
+  .cc-readout {
+    position: fixed;
+    left: 50%;
+    bottom: 64px;
+    transform: translate(-50%, 0);
+    z-index: 80;
+    pointer-events: none;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 18px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.25s, transform 0.25s;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 6px 18px rgba(40, 30, 15, 0.35);
+  }
+  .cc-readout.on {
+    opacity: 1;
+    transform: translate(-50%, -8px);
+  }
+  .cc-readout .pip {
+    width: 6px;
+    height: 6px;
+    background: var(--rust);
+  }
+  .cc-readout .url {
+    opacity: 0.55;
   }
 
   .cc-stage {
