@@ -821,21 +821,6 @@ const gridCoord = (i: number) => {
     .cc-plan-grid {
       grid-template-columns: repeat(2, 1fr);
     }
-    .cc-room {
-      min-height: 108px;
-      padding: 16px 14px 14px;
-    }
-    .cc-room .label {
-      font-size: 14px;
-    }
-    .cc-room .area {
-      left: 14px;
-      bottom: 6px;
-    }
-    .cc-room .swing {
-      width: 32px;
-      height: 32px;
-    }
   }
 
   .cc-room {
@@ -995,6 +980,24 @@ const gridCoord = (i: number) => {
   .cc-room:focus-visible .hatch {
     opacity: 0.35;
     color: var(--concrete);
+  }
+
+  @media (max-width: 720px) {
+    .cc-room {
+      min-height: 108px;
+      padding: 16px 14px 14px;
+    }
+    .cc-room .label {
+      font-size: 14px;
+    }
+    .cc-room .area {
+      left: 14px;
+      bottom: 6px;
+    }
+    .cc-room .swing {
+      width: 32px;
+      height: 32px;
+    }
   }
 
   /* Scale bar */
