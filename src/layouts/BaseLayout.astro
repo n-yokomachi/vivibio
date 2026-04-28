@@ -24,7 +24,7 @@ const {
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;700;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;700;900&family=Caveat:wght@400;500&display=swap"
       rel="stylesheet"
     />
 
@@ -38,7 +38,7 @@ const {
         try {
           var hash = location.hash.slice(1);
           var stored = localStorage.getItem('vivibio-theme');
-          var allowed = ['minimal', 'glitch', 'particle'];
+          var allowed = ['minimal', 'glitch', 'particle', 'concrete'];
           var theme =
             allowed.indexOf(hash) >= 0
               ? hash
@@ -93,6 +93,11 @@ const {
         color: #e2efff;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
       }
+      :root[data-theme='concrete'] body {
+        background: #e8e2d6;
+        color: #1a1815;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      }
       body {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
@@ -106,7 +111,8 @@ const {
       }
       :root[data-theme='minimal'] .theme-pane[data-theme='minimal'],
       :root[data-theme='glitch'] .theme-pane[data-theme='glitch'],
-      :root[data-theme='particle'] .theme-pane[data-theme='particle'] {
+      :root[data-theme='particle'] .theme-pane[data-theme='particle'],
+      :root[data-theme='concrete'] .theme-pane[data-theme='concrete'] {
         display: block;
       }
     </style>
