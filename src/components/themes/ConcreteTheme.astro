@@ -149,12 +149,18 @@ const gridCoord = (i: number) => {
       <g class="rust" fill="none" stroke-width="1">
         <path d="M 760 380 A 40 40 0 0 1 750 420" stroke="currentColor" />
       </g>
-      <g fill="currentColor">
+      <g class="cc-datum" fill="currentColor">
         <circle cx="720" cy="380" r="3" />
         <circle cx="720" cy="380" r="9" fill="none" stroke="currentColor" stroke-width="1" />
       </g>
+      <g class="cc-arm">
+        <line x1="720" y1="380" x2="720" y2="0" stroke="currentColor" stroke-width="0.6" stroke-dasharray="3 4" />
+      </g>
     </svg>
   </div>
+
+  <div class="cc-cursor-h" aria-hidden="true"></div>
+  <div class="cc-cursor-v" aria-hidden="true"></div>
 
   <div class="cc-side">SHEET A-101 · PROFILE PLAN · SCALE 1:50 · {yyyy}.{mo}.{da}</div>
 
@@ -489,6 +495,85 @@ const gridCoord = (i: number) => {
     opacity: 0.55;
   }
 
+  /* === Animations === */
+
+  /* Compass arm — radial line rotating around the datum */
+  .cc-construct .cc-arm {
+    transform-origin: 720px 380px;
+    transform-box: fill-box;
+    animation: cc-arm-rotate 24s linear infinite;
+    opacity: 0.7;
+  }
+  @keyframes cc-arm-rotate {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* Construction lines — staggered fade-in on theme activation */
+  .cc-construct svg > * {
+    animation: cc-fade-in 0.9s ease-out both;
+  }
+  .cc-construct svg > *:nth-child(1)  { animation-delay: 0.05s; }
+  .cc-construct svg > *:nth-child(2)  { animation-delay: 0.20s; }
+  .cc-construct svg > *:nth-child(3)  { animation-delay: 0.35s; }
+  .cc-construct svg > *:nth-child(4)  { animation-delay: 0.50s; }
+  .cc-construct svg > *:nth-child(5)  { animation-delay: 0.65s; }
+  .cc-construct svg > *:nth-child(6)  { animation-delay: 0.80s; }
+  .cc-construct svg > *:nth-child(7)  { animation-delay: 0.95s; }
+  .cc-construct svg > *:nth-child(8)  { animation-delay: 1.10s; }
+  .cc-construct svg > *:nth-child(9)  { animation-delay: 1.25s; }
+  .cc-construct svg > *:nth-child(10) { animation-delay: 1.40s; }
+  .cc-construct svg > *:nth-child(11) { animation-delay: 1.55s; }
+  /* arm should not re-fade (stays continuously animated) */
+  .cc-construct .cc-arm { animation-delay: 1.6s; }
+  @keyframes cc-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Datum point — gentle pulse around compass center */
+  .cc-construct .cc-datum {
+    transform-origin: 720px 380px;
+    transform-box: fill-box;
+    animation: cc-datum-pulse 3.2s ease-in-out infinite;
+  }
+  @keyframes cc-datum-pulse {
+    0%, 100% { transform: scale(1);   opacity: 1; }
+    50%      { transform: scale(1.45); opacity: 0.6; }
+  }
+
+  /* Cursor crosshair — thin guide lines following pointer over the rulers */
+  .cc-cursor-h,
+  .cc-cursor-v {
+    position: fixed;
+    pointer-events: none;
+    background: var(--rust);
+    opacity: 0;
+    z-index: 4;
+    transition: opacity 0.3s ease;
+    mix-blend-mode: multiply;
+  }
+  .cc-cursor-h {
+    left: 0;
+    right: 0;
+    top: var(--cur-y, -10px);
+    height: 1px;
+  }
+  .cc-cursor-v {
+    top: 0;
+    bottom: 0;
+    left: var(--cur-x, -10px);
+    width: 1px;
+  }
+  .cc[data-cursor='on'] .cc-cursor-h,
+  .cc[data-cursor='on'] .cc-cursor-v {
+    opacity: 0.22;
+  }
+  @media (max-width: 720px) {
+    .cc-cursor-h,
+    .cc-cursor-v { display: none; }
+  }
+
   /* Vertical side label */
   .cc-side {
     position: fixed;
@@ -670,6 +755,13 @@ const gridCoord = (i: number) => {
     text-transform: uppercase;
     transform: rotate(-2deg);
     background: rgba(232, 226, 214, 0.5);
+    animation: cc-pour-impact 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+    animation-delay: 1.7s;
+  }
+  @keyframes cc-pour-impact {
+    0%   { transform: rotate(-2deg) scale(1.7);  opacity: 0; }
+    55%  { transform: rotate(-2deg) scale(0.94); opacity: 1; }
+    100% { transform: rotate(-2deg) scale(1);    opacity: 1; }
   }
 
   /* Section cut marker — A——A' */
@@ -963,6 +1055,16 @@ const gridCoord = (i: number) => {
   .cc-room:focus-visible .swing {
     opacity: 0.65;
   }
+  /* Inner arc draws in on hover/focus, like the door opening */
+  .cc-room .swing path:nth-of-type(3) {
+    stroke-dasharray: 50;
+    stroke-dashoffset: 50;
+    transition: stroke-dashoffset 0.45s ease-out;
+  }
+  .cc-room:hover .swing path:nth-of-type(3),
+  .cc-room:focus-visible .swing path:nth-of-type(3) {
+    stroke-dashoffset: 0;
+  }
 
   .cc-room .hatch {
     position: absolute;
@@ -1221,6 +1323,18 @@ const gridCoord = (i: number) => {
     line-height: 1.35;
     color: rgba(138, 58, 31, 0.65);
     transform: rotate(-1deg);
+    /* Handwriting cycle: write left→right, hold, erase left→right, pause */
+    animation: cc-handwrite 18s ease-in-out infinite;
+    clip-path: inset(0 100% 0 0);
+  }
+  .cc-scrap.s2 .cc-scrap-note { animation-delay: 6s; }
+  .cc-scrap.s3 .cc-scrap-note { animation-delay: 12s; }
+  @keyframes cc-handwrite {
+    0%   { clip-path: inset(0 100% 0 0); }   /* erased */
+    18%  { clip-path: inset(0 0 0 0); }      /* fully written */
+    55%  { clip-path: inset(0 0 0 0); }      /* hold */
+    78%  { clip-path: inset(0 0 0 100%); }   /* erased L→R */
+    100% { clip-path: inset(0 100% 0 0); }   /* pause off-screen */
   }
 
   /* Masking-tape strips */
@@ -1297,6 +1411,22 @@ const gridCoord = (i: number) => {
     grid-template-columns: 1fr;
     gap: 48px;
   }
+
+  /* Respect users who prefer reduced motion — disable all animations */
+  @media (prefers-reduced-motion: reduce) {
+    .cc-construct svg > *,
+    .cc-construct .cc-arm,
+    .cc-construct .cc-datum,
+    .cc-pour,
+    .cc-scrap-note,
+    .cc-room .swing path:nth-of-type(3) {
+      animation: none !important;
+      transition: none !important;
+    }
+    .cc-scrap-note { clip-path: none; }
+    .cc-cursor-h,
+    .cc-cursor-v { display: none; }
+  }
 </style>
 
 <script>
@@ -1348,7 +1478,7 @@ const gridCoord = (i: number) => {
       });
     }
 
-    // ----- マウス視差 (cc-surface を ±6px 動かす) -----
+    // ----- マウス視差 (cc-surface を ±6px 動かす) + ルーラー追従ガイド -----
     const cc = document.querySelector<HTMLElement>('.cc');
     if (cc) {
       const onMove = (e: PointerEvent) => {
@@ -1360,8 +1490,15 @@ const gridCoord = (i: number) => {
         const py = (ny * 6).toFixed(2);
         cc.style.setProperty('--par-x', `${px}px`);
         cc.style.setProperty('--par-y', `${py}px`);
+        cc.style.setProperty('--cur-x', `${e.clientX}px`);
+        cc.style.setProperty('--cur-y', `${e.clientY}px`);
+        cc.dataset.cursor = 'on';
+      };
+      const onLeave = () => {
+        cc.dataset.cursor = 'off';
       };
       window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerleave', onLeave);
     }
   }
 
