@@ -35,7 +35,7 @@ const gridCoord = (i: number) => {
   <div class="cc-seam" />
   <div class="cc-seam b" />
 
-  <div class="cc-ties">
+  <div class="cc-ties" aria-hidden="true">
     {Array.from({ length: 32 }).map((_, i) => {
       const cols = 8;
       const r = Math.floor(i / cols);
@@ -846,14 +846,17 @@ const gridCoord = (i: number) => {
       linear-gradient(var(--ink-soft), var(--ink-soft)) 100% 100%/1px 8px no-repeat;
     opacity: 0.55;
   }
-  .cc-room:hover {
+  .cc-room:hover,
+  .cc-room:focus-visible {
     background: var(--ink);
     color: var(--paper);
   }
-  .cc-room:hover::before {
+  .cc-room:hover::before,
+  .cc-room:focus-visible::before {
     border-color: rgba(232, 226, 214, 0.25);
   }
-  .cc-room:hover::after {
+  .cc-room:hover::after,
+  .cc-room:focus-visible::after {
     filter: invert(1) brightness(2);
     opacity: 0.35;
   }
@@ -882,7 +885,8 @@ const gridCoord = (i: number) => {
     background: currentColor;
     opacity: 0.35;
   }
-  .cc-room:hover .coord {
+  .cc-room:hover .coord,
+  .cc-room:focus-visible .coord {
     color: var(--concrete);
   }
 
@@ -905,7 +909,8 @@ const gridCoord = (i: number) => {
     text-transform: uppercase;
     color: var(--ink-soft);
   }
-  .cc-room:hover .meta {
+  .cc-room:hover .meta,
+  .cc-room:focus-visible .meta {
     color: var(--concrete);
   }
   .cc-room .icon {
@@ -924,7 +929,8 @@ const gridCoord = (i: number) => {
     color: var(--ink-soft);
     opacity: 0.7;
   }
-  .cc-room:hover .area {
+  .cc-room:hover .area,
+  .cc-room:focus-visible .area {
     color: var(--concrete);
     opacity: 0.8;
   }
@@ -938,7 +944,8 @@ const gridCoord = (i: number) => {
     pointer-events: none;
     opacity: 0.4;
   }
-  .cc-room:hover .swing {
+  .cc-room:hover .swing,
+  .cc-room:focus-visible .swing {
     opacity: 0.65;
   }
 
@@ -954,7 +961,8 @@ const gridCoord = (i: number) => {
     color: var(--ink);
     clip-path: polygon(0 0, 100% 0, 0 100%);
   }
-  .cc-room:hover .hatch {
+  .cc-room:hover .hatch,
+  .cc-room:focus-visible .hatch {
     opacity: 0.35;
     color: var(--concrete);
   }
