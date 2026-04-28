@@ -244,6 +244,33 @@ const gridCoord = (i: number) => {
         <div>1 : 50</div>
       </div>
     </div>
+
+    <div>
+      <div class="cc-cut">
+        <div class="badge">B<span class="arrow"></span></div>
+        <div class="line" />
+        <span class="cc-cut-label">SECTION B — B'</span>
+        <div class="line" />
+        <div class="badge">B'<span class="arrow"></span></div>
+      </div>
+
+      <div class="cc-sec">
+        <div class="marker">C</div>
+        <div class="cc-sec-label">INDEX · 索引 · OUTPUTS</div>
+        <div class="rule" />
+        <div class="count">NOW</div>
+      </div>
+
+      <div class="cc-index">
+        {OUTPUTS.map((o) => (
+          <a href={o.url} class="cc-index-cell" target="_blank" rel="noopener noreferrer">
+            <div class="lbl">▣ {o.badge}</div>
+            <div class="val">{o.title}</div>
+            <div class="sub">{o.subtitle}</div>
+          </a>
+        ))}
+      </div>
+    </div>
   </div>
 </div>
 
@@ -921,6 +948,58 @@ const gridCoord = (i: number) => {
   }
   .cc-scale-spacer {
     flex: 1;
+  }
+
+  /* INDEX (OUTPUTS) — 2x2 legend-style grid */
+  .cc-index {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1.5px solid var(--rule);
+  }
+  @media (max-width: 720px) {
+    .cc-index {
+      grid-template-columns: 1fr;
+    }
+  }
+  .cc-index-cell {
+    background: var(--paper);
+    padding: 18px 18px 20px;
+    display: grid;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--ink);
+    transition: color 0.2s ease;
+  }
+  .cc-index-cell:hover {
+    color: var(--rust);
+  }
+  .cc-index-cell .lbl {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .cc-index-cell:hover .lbl {
+    color: var(--rust);
+  }
+  .cc-index-cell .val {
+    font-family: 'Inter', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 400;
+    color: var(--ink);
+  }
+  .cc-index-cell:hover .val {
+    color: var(--rust);
+  }
+  .cc-index-cell .sub {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+    letter-spacing: 0.04em;
   }
 
   .cc-stage {
