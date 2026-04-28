@@ -1253,3 +1253,81 @@ const gridCoord = (i: number) => {
     gap: 48px;
   }
 </style>
+
+<script>
+  function initConcreteEffects() {
+    if ((window as any).__concreteInited) return;
+    (window as any).__concreteInited = true;
+
+    // ----- Clock 1分更新 (TITLE BLOCK 右、Footer 右) -----
+    const clockEls = document.querySelectorAll<HTMLElement>('[data-cc-clock]');
+    if (clockEls.length > 0) {
+      const updateClock = () => {
+        const d = new Date();
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        const text = `${hh}:${mm}`;
+        clockEls.forEach((el) => {
+          el.textContent = text;
+        });
+      };
+      updateClock();
+      setInterval(updateClock, 60_000);
+    }
+
+    // ----- Hover readout (room hover/touchstart で表示) -----
+    const readout = document.querySelector<HTMLElement>('[data-cc-readout]');
+    const readoutText = readout?.querySelector<HTMLElement>('.text');
+    const readoutUrl = readout?.querySelector<HTMLElement>('.url');
+    const rooms = document.querySelectorAll<HTMLElement>('[data-cc-room]');
+    if (readout && readoutText && readoutUrl) {
+      const showReadout = (el: HTMLElement) => {
+        const label = el.dataset.ccLabel ?? '';
+        const handle = el.dataset.ccHandle ?? '';
+        const url = el.dataset.ccUrl ?? '';
+        readoutText.textContent = `${label} · ${handle}`;
+        readoutUrl.textContent = `→ ${url}`;
+        readout.classList.add('on');
+      };
+      const hideReadout = () => {
+        readout.classList.remove('on');
+      };
+      rooms.forEach((el) => {
+        el.addEventListener('mouseenter', () => showReadout(el));
+        el.addEventListener('mouseleave', hideReadout);
+        el.addEventListener('focus', () => showReadout(el));
+        el.addEventListener('blur', hideReadout);
+        el.addEventListener('touchstart', () => showReadout(el), { passive: true });
+      });
+    }
+
+    // ----- マウス視差 (cc-surface を ±6px 動かす) -----
+    const cc = document.querySelector<HTMLElement>('.cc');
+    if (cc) {
+      const onMove = (e: PointerEvent) => {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const nx = (e.clientX / w - 0.5) * 2; // -1..1
+        const ny = (e.clientY / h - 0.5) * 2;
+        const px = (nx * 6).toFixed(2);
+        const py = (ny * 6).toFixed(2);
+        cc.style.setProperty('--par-x', `${px}px`);
+        cc.style.setProperty('--par-y', `${py}px`);
+      };
+      window.addEventListener('pointermove', onMove);
+    }
+  }
+
+  // 初期 data-theme が concrete のときは即時、そうでなければ MutationObserver で待つ
+  if (document.documentElement.dataset.theme === 'concrete') {
+    initConcreteEffects();
+  } else {
+    const observer = new MutationObserver(() => {
+      if (document.documentElement.dataset.theme === 'concrete') {
+        initConcreteEffects();
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+</script>
