@@ -186,7 +186,9 @@ const gridCoord = (i: number) => {
         <span class="ja">{PROFILE.nameJa}</span>
       </h1>
       <div class="role">
-        <span class="accent">{PROFILE.title}</span> · {PROFILE.bio}
+        <span class="accent">{PROFILE.title}</span>
+        <span class="bio">{PROFILE.bio}</span>
+        <span class="bio-ja">{PROFILE.bioJa}</span>
       </div>
       <div class="stamps">
         <span class="cc-pour">◉ POURED {yyyy}.{mo}.{da}</span>
@@ -627,6 +629,19 @@ const gridCoord = (i: number) => {
     border-bottom: 1px solid var(--rust);
     padding-bottom: 1px;
   }
+  .cc-hero .role .bio {
+    display: block;
+    margin-top: 12px;
+  }
+  .cc-hero .role .bio-ja {
+    display: block;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    opacity: 0.85;
+    line-break: strict;
+    word-break: auto-phrase;
+  }
   .cc-hero .stamps {
     margin-top: 22px;
     display: flex;
@@ -805,6 +820,21 @@ const gridCoord = (i: number) => {
   @media (max-width: 720px) {
     .cc-plan-grid {
       grid-template-columns: repeat(2, 1fr);
+    }
+    .cc-room {
+      min-height: 108px;
+      padding: 16px 14px 14px;
+    }
+    .cc-room .label {
+      font-size: 14px;
+    }
+    .cc-room .area {
+      left: 14px;
+      bottom: 6px;
+    }
+    .cc-room .swing {
+      width: 32px;
+      height: 32px;
     }
   }
 
