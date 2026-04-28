@@ -150,6 +150,7 @@ const gridCoord = (i: number) => {
         <line x1="720" y1="380" x2="340" y2="120" stroke="currentColor" />
         <line x1="720" y1="380" x2="1000" y2="640" stroke="currentColor" />
         <line x1="720" y1="380" x2="340" y2="640" stroke="currentColor" />
+        <animateTransform attributeName="transform" type="rotate" from="0 720 380" to="360 720 380" dur="40s" repeatCount="indefinite" />
       </g>
       <path d="M 0 1200 A 700 700 0 0 1 1000 1200" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 5" />
       <path d="M 100 1480 A 400 400 0 0 1 900 1480" fill="none" stroke="currentColor" stroke-width="0.75" />
@@ -162,11 +163,19 @@ const gridCoord = (i: number) => {
         <path d="M 760 380 A 40 40 0 0 1 750 420" stroke="currentColor" />
       </g>
       <g class="cc-datum" fill="currentColor">
-        <circle cx="720" cy="380" r="3" />
-        <circle cx="720" cy="380" r="9" fill="none" stroke="currentColor" stroke-width="1" />
+        <circle cx="720" cy="380" r="3">
+          <animate attributeName="r" values="2.5;5.5;2.5" dur="3.2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0.65;1" dur="3.2s" repeatCount="indefinite" />
+        </circle>
+        <circle cx="720" cy="380" r="9" fill="none" stroke="currentColor" stroke-width="1">
+          <animate attributeName="r" values="9;28;9" dur="3.2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.7;0;0.7" dur="3.2s" repeatCount="indefinite" />
+          <animate attributeName="stroke-width" values="1;0.4;1" dur="3.2s" repeatCount="indefinite" />
+        </circle>
       </g>
       <g class="cc-arm">
-        <line x1="720" y1="380" x2="720" y2="0" stroke="currentColor" stroke-width="0.6" stroke-dasharray="3 4" />
+        <line x1="720" y1="380" x2="720" y2="0" stroke="currentColor" stroke-width="1" stroke-dasharray="6 6" />
+        <animateTransform attributeName="transform" type="rotate" from="0 720 380" to="360 720 380" dur="18s" repeatCount="indefinite" />
       </g>
     </svg>
   </div>
@@ -509,17 +518,9 @@ const gridCoord = (i: number) => {
 
   /* === Animations === */
 
-  /* Compass arm — radial line rotating around the datum */
-  .cc-construct .cc-arm {
-    transform-box: view-box;
-    transform-origin: 720px 380px;
-    animation: cc-arm-rotate 24s linear infinite;
-    opacity: 0.7;
-  }
-  @keyframes cc-arm-rotate {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-  }
+  /* Compass arms rotate via inline <animateTransform> (SMIL) for SVG reliability.
+     This rule only sets opacity; the rotation is handled by the SVG element itself. */
+  .cc-construct .cc-arm { opacity: 0.7; }
 
   /* Construction lines — staggered fade-in on theme activation */
   .cc-construct svg > * {
@@ -543,28 +544,8 @@ const gridCoord = (i: number) => {
     to   { opacity: 1; }
   }
 
-  /* Datum point — gentle pulse around compass center.
-     Pulses are amplified via a halo ring so the motion is visible at viewBox scale. */
-  .cc-construct .cc-datum {
-    transform-box: view-box;
-    transform-origin: 720px 380px;
-    animation: cc-datum-pulse 3.2s ease-in-out infinite;
-  }
-  @keyframes cc-datum-pulse {
-    0%, 100% { transform: scale(1);   opacity: 1; }
-    50%      { transform: scale(1.85); opacity: 0.55; }
-  }
-  /* Outward expanding halo — repurposes the outline circle for visibility */
-  .cc-construct .cc-datum circle:nth-of-type(2) {
-    transform-box: view-box;
-    transform-origin: 720px 380px;
-    animation: cc-datum-halo 3.2s ease-out infinite;
-  }
-  @keyframes cc-datum-halo {
-    0%   { transform: scale(0.8); opacity: 0.6; }
-    70%  { transform: scale(2.6); opacity: 0; }
-    100% { transform: scale(2.6); opacity: 0; }
-  }
+  /* Datum point pulse + halo are driven by inline <animate> (SMIL) on the SVG circles.
+     This avoids the CSS transform-origin/transform-box quirks across browsers. */
 
   /* Cursor crosshair — thin guide lines following pointer over the rulers */
   .cc-cursor-h,
