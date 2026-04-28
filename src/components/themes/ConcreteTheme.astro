@@ -1,10 +1,17 @@
 ---
 import { PROFILE, LINKS, OUTPUTS } from '../../data/profile.ts';
+import LinkIcons from '../icons/LinkIcons.astro';
 
 const now = new Date();
 const yyyy = now.getFullYear();
 const mo = String(now.getMonth() + 1).padStart(2, '0');
 const da = String(now.getDate()).padStart(2, '0');
+
+const gridCoord = (i: number) => {
+  const col = String.fromCharCode(65 + (i % 4));
+  const row = Math.floor(i / 4) + 1;
+  return `${col}${row}`;
+};
 ---
 
 <div class="cc">
@@ -161,6 +168,80 @@ const da = String(now.getDate()).padStart(2, '0');
       <div class="stamps">
         <span class="cc-pour">◉ POURED {yyyy}.{mo}.{da}</span>
         <span class="material">CONCRETE · CAST IN PLACE · CLASS C30/37</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="cc-cut">
+        <div class="badge">A<span class="arrow"></span></div>
+        <div class="line" />
+        <span class="cc-cut-label">SECTION A — A'</span>
+        <div class="line" />
+        <div class="badge">A'<span class="arrow"></span></div>
+      </div>
+
+      <div class="cc-sec">
+        <div class="marker">B</div>
+        <div class="cc-sec-label">PLAN · 平面図 · LINKS</div>
+        <div class="rule" />
+        <div class="count">{LINKS.length} ROOMS</div>
+      </div>
+
+      <div class="cc-dim">
+        <div class="tick" />
+        <div class="line"><span class="num">2400</span></div>
+        <div class="tick" />
+        <div class="line"><span class="num">2400</span></div>
+        <div class="tick" />
+        <div class="line"><span class="num">2400</span></div>
+        <div class="tick" />
+        <div class="line"><span class="num">2400</span></div>
+        <div class="tick" />
+      </div>
+
+      <div class="cc-plan-grid">
+        {LINKS.map((l, i) => (
+          <a
+            href={l.url}
+            class="cc-room"
+            data-cc-room
+            data-cc-label={l.label}
+            data-cc-handle={l.handle}
+            data-cc-url={l.url}
+            target={l.url.startsWith('mailto:') ? undefined : '_blank'}
+            rel={l.url.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+          >
+            <div class="hatch" />
+            <div>
+              <div class="coord">
+                <span class="dot" />
+                <span>{gridCoord(i)} · {String(i + 1).padStart(2, '0')}</span>
+                <span class="ext" />
+              </div>
+              <div class="label">{l.label}</div>
+            </div>
+            <div class="meta">
+              <span>{l.category}</span>
+              <span class="icon"><LinkIcons id={l.id} /></span>
+            </div>
+            <div class="area">{(12 + i * 3).toFixed(1)} m²</div>
+            <svg class="swing" viewBox="0 0 44 44" aria-hidden="true">
+              <path d="M0 44 L0 0" stroke="currentColor" stroke-width="1" />
+              <path d="M0 44 A 44 44 0 0 1 44 0" fill="none" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2" />
+              <path d="M0 44 A 30 30 0 0 1 30 14" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.5" />
+            </svg>
+          </a>
+        ))}
+      </div>
+
+      <div class="cc-scale">
+        <div>SCALE</div>
+        <div class="bars">
+          <span /><span /><span /><span /><span /><span />
+        </div>
+        <div>0 — 5m</div>
+        <div class="cc-scale-spacer" />
+        <div>1 : 50</div>
       </div>
     </div>
   </div>
@@ -504,6 +585,342 @@ const da = String(now.getDate()).padStart(2, '0');
     text-transform: uppercase;
     transform: rotate(-2deg);
     background: rgba(232, 226, 214, 0.5);
+  }
+
+  /* Section cut marker — A——A' */
+  .cc-cut {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 8px 0;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--ink);
+  }
+  .cc-cut .badge {
+    width: 26px;
+    height: 26px;
+    border: 1.5px solid var(--ink);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 10px;
+    background: var(--paper);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .cc-cut .badge::before,
+  .cc-cut .badge::after {
+    content: '';
+    position: absolute;
+    width: 7px;
+    height: 1.5px;
+    background: var(--ink);
+  }
+  .cc-cut .badge::before {
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .cc-cut .badge::after {
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .cc-cut .badge .arrow {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 7px solid var(--ink);
+  }
+  .cc-cut .line {
+    flex: 1;
+    height: 1.5px;
+    background-image: repeating-linear-gradient(to right, var(--ink) 0 8px, transparent 8px 16px);
+  }
+  .cc-cut-label {
+    padding: 0 10px;
+  }
+
+  /* Section heading */
+  .cc-sec {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .cc-sec .marker {
+    width: 24px;
+    height: 24px;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .cc-sec-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .cc-sec .rule {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+    opacity: 0.6;
+  }
+  .cc-sec .count {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ink-soft);
+  }
+
+  /* Dimension line */
+  .cc-dim {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--ink-soft);
+  }
+  .cc-dim .tick {
+    width: 1px;
+    height: 7px;
+    background: var(--rule);
+  }
+  .cc-dim .line {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+    position: relative;
+  }
+  .cc-dim .num {
+    padding: 0 6px;
+    background: var(--paper);
+    position: absolute;
+    left: 50%;
+    top: -1px;
+    transform: translate(-50%, -50%);
+  }
+
+  /* PLAN — links arranged as floor-plan rooms */
+  .cc-plan-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1.5px solid var(--rule);
+    position: relative;
+  }
+  @media (max-width: 720px) {
+    .cc-plan-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .cc-room {
+    position: relative;
+    background: var(--paper);
+    padding: 22px 18px 20px;
+    min-height: 152px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: var(--ink);
+    text-decoration: none;
+    transition: background 0.25s ease, color 0.25s ease;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .cc-room::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px dashed transparent;
+    pointer-events: none;
+    transition: border-color 0.25s ease;
+  }
+  .cc-room::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--ink-soft), var(--ink-soft)) 0 0/8px 1px no-repeat,
+      linear-gradient(var(--ink-soft), var(--ink-soft)) 0 0/1px 8px no-repeat,
+      linear-gradient(var(--ink-soft), var(--ink-soft)) 100% 0/8px 1px no-repeat,
+      linear-gradient(var(--ink-soft), var(--ink-soft)) 100% 0/1px 8px no-repeat,
+      linear-gradient(var(--ink-soft), var(--ink-soft)) 0 100%/8px 1px no-repeat,
+      linear-gradient(var(--ink-soft), var(--ink-soft)) 0 100%/1px 8px no-repeat,
+      linear-gradient(var(--ink-soft), var(--ink-soft)) 100% 100%/8px 1px no-repeat,
+      linear-gradient(var(--ink-soft), var(--ink-soft)) 100% 100%/1px 8px no-repeat;
+    opacity: 0.55;
+  }
+  .cc-room:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .cc-room:hover::before {
+    border-color: rgba(232, 226, 214, 0.25);
+  }
+  .cc-room:hover::after {
+    filter: invert(1) brightness(2);
+    opacity: 0.35;
+  }
+
+  .cc-room .coord {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cc-room .coord .dot {
+    width: 5px;
+    height: 5px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+  .cc-room .coord .ext {
+    flex: 1;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.35;
+  }
+  .cc-room:hover .coord {
+    color: var(--concrete);
+  }
+
+  .cc-room .label {
+    font-family: 'Inter', 'Helvetica Neue', sans-serif;
+    font-weight: 500;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+
+  .cc-room .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .cc-room:hover .meta {
+    color: var(--concrete);
+  }
+  .cc-room .icon {
+    width: 22px;
+    height: 22px;
+    opacity: 0.85;
+  }
+
+  .cc-room .area {
+    position: absolute;
+    left: 18px;
+    bottom: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    color: var(--ink-soft);
+    opacity: 0.7;
+  }
+  .cc-room:hover .area {
+    color: var(--concrete);
+    opacity: 0.8;
+  }
+
+  .cc-room .swing {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 44px;
+    height: 44px;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+  .cc-room:hover .swing {
+    opacity: 0.65;
+  }
+
+  .cc-room .hatch {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 28px;
+    height: 28px;
+    pointer-events: none;
+    opacity: 0.25;
+    background-image: repeating-linear-gradient(45deg, currentColor 0 1px, transparent 1px 4px);
+    color: var(--ink);
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+  }
+  .cc-room:hover .hatch {
+    opacity: 0.35;
+    color: var(--concrete);
+  }
+
+  /* Scale bar */
+  .cc-scale {
+    display: flex;
+    align-items: end;
+    gap: 18px;
+    margin-top: 24px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .cc-scale .bars {
+    display: flex;
+    height: 8px;
+  }
+  .cc-scale .bars span {
+    width: 28px;
+    height: 100%;
+  }
+  .cc-scale .bars span:nth-child(odd) {
+    background: var(--ink);
+  }
+  .cc-scale .bars span:nth-child(even) {
+    background: var(--paper);
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+  .cc-scale .bars span:first-child {
+    border-left: 1px solid var(--ink);
+  }
+  .cc-scale .bars span:last-child {
+    border-right: 1px solid var(--ink);
+  }
+  .cc-scale-spacer {
+    flex: 1;
   }
 
   .cc-stage {
