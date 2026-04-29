@@ -1,0 +1,210 @@
+---
+// First-visit tutorial: briefly cycles all 4 themes, then settles on the
+// target (URL hash if any, else 'minimal') and shows a guide pointing at the
+// theme switcher. Runs once per device (gated by localStorage flag).
+---
+
+<aside class="tt-guide" id="tt-guide" aria-hidden="true" role="status" aria-live="polite">
+  <div class="tt-bubble">
+    <span class="tt-line">↗ テーマを切り替えられます</span>
+    <span class="tt-sub">tap to switch theme</span>
+  </div>
+</aside>
+
+<style>
+  .tt-guide {
+    position: fixed;
+    z-index: 200;
+    /* default: closed switcher shows 48px tab → bubble sits 12px to the left */
+    right: 60px;
+    top: 50%;
+    transform: translateY(-50%) translateX(16px);
+    opacity: 0;
+    pointer-events: none;
+    /* `right` matches the switcher's slide-out timing curve so they move together */
+    transition:
+      right 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+      opacity 0.35s ease,
+      transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .tt-guide.show {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+    animation: tt-pulse 2.2s ease-in-out 0.4s infinite;
+  }
+
+  /* Move with the switcher when it expands (full button row = 160px wide).
+     Sibling selector reaches across <body> children since both <aside>s are
+     direct children of body. */
+  @media (hover: hover) {
+    :global(.ts:hover) ~ .tt-guide {
+      right: 172px;
+    }
+  }
+  :global(.ts[data-open='true']) ~ .tt-guide {
+    right: 172px;
+  }
+
+  .tt-bubble {
+    position: relative;
+    background: rgba(0, 0, 0, 0.86);
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0.04em;
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    white-space: nowrap;
+  }
+  .tt-bubble::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    background: rgba(0, 0, 0, 0.86);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .tt-line {
+    display: block;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .tt-sub {
+    display: block;
+    margin-top: 3px;
+    font-size: 10px;
+    opacity: 0.55;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  @keyframes tt-pulse {
+    0%, 100% {
+      transform: translateY(-50%) translateX(0);
+    }
+    50% {
+      transform: translateY(-50%) translateX(-6px);
+    }
+  }
+
+  @media (max-width: 720px) {
+    .tt-guide {
+      right: 56px;
+    }
+    .tt-line { font-size: 12px; }
+    .tt-bubble { padding: 10px 13px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tt-guide,
+    .tt-guide.show {
+      animation: none;
+      transition: opacity 0.2s ease;
+      transform: translateY(-50%) translateX(0);
+    }
+  }
+</style>
+
+<script>
+  type ThemeId = 'minimal' | 'glitch' | 'particle' | 'concrete';
+
+  const TUT_KEY = 'vivibio-tutorial-seen';
+  const ALLOWED: ThemeId[] = ['minimal', 'glitch', 'particle', 'concrete'];
+
+  function hasSeenTutorial(): boolean {
+    try {
+      return localStorage.getItem(TUT_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  function markSeen(): void {
+    try {
+      localStorage.setItem(TUT_KEY, 'true');
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function isAllowed(v: string | null | undefined): v is ThemeId {
+    return v != null && (ALLOWED as readonly string[]).includes(v);
+  }
+
+  function settleTheme(target: ThemeId): void {
+    const w = window as unknown as { vivibioApplyTheme?: (t: ThemeId) => void };
+    if (typeof w.vivibioApplyTheme === 'function') {
+      w.vivibioApplyTheme(target);
+    } else {
+      document.documentElement.dataset.theme = target;
+    }
+  }
+
+  function showGuide(): void {
+    const guide = document.getElementById('tt-guide');
+    if (!guide) return;
+    requestAnimationFrame(() => {
+      guide.classList.add('show');
+      guide.setAttribute('aria-hidden', 'false');
+    });
+    window.setTimeout(() => {
+      guide.classList.remove('show');
+      guide.setAttribute('aria-hidden', 'true');
+    }, 4500);
+  }
+
+  function runTutorial(): void {
+    const hash = location.hash.slice(1);
+    const hasHash = isAllowed(hash);
+    const target: ThemeId = hasHash ? hash : 'minimal';
+    const seen = hasSeenTutorial();
+
+    // Gate: no-hash always animates; hash-specified animates only on first device visit
+    if (hasHash && seen) return;
+
+    // Always mark seen on first run so a future hash-only visit doesn't re-trigger
+    if (!seen) markSeen();
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      settleTheme(target);
+      showGuide();
+      return;
+    }
+
+    // Build cycle order so the final flash lands on the target naturally
+    const others = ALLOWED.filter((t) => t !== target);
+    const cycle: ThemeId[] = [...others, target];
+    // Each step needs to allow the cross-fade transition (0.35s) to settle
+    const stepMs = 480;
+
+    let i = 0;
+    function tick() {
+      if (i >= cycle.length) {
+        // Final settle persists target (writes localStorage + updates aria-current)
+        settleTheme(target);
+        showGuide();
+        return;
+      }
+      document.documentElement.dataset.theme = cycle[i];
+      i += 1;
+      window.setTimeout(tick, stepMs);
+    }
+
+    // Tiny delay so the initial paint has settled before we start the cycle
+    window.setTimeout(tick, 220);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', runTutorial, { once: true });
+  } else {
+    runTutorial();
+  }
+</script>

@@ -102,18 +102,39 @@ const {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         overscroll-behavior-y: none;
+        /* Stack all theme panes in the same grid cell so they can cross-fade
+           when data-theme changes. */
+        display: grid;
+        grid-template-columns: 1fr;
+        transition:
+          background-color 0.35s ease,
+          color 0.35s ease;
       }
       a {
         color: inherit;
       }
       .theme-pane {
-        display: none;
+        grid-column: 1;
+        grid-row: 1;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.35s ease,
+          visibility 0s linear 0.35s;
       }
       :root[data-theme='minimal'] .theme-pane[data-theme='minimal'],
       :root[data-theme='glitch'] .theme-pane[data-theme='glitch'],
       :root[data-theme='particle'] .theme-pane[data-theme='particle'],
       :root[data-theme='concrete'] .theme-pane[data-theme='concrete'] {
-        display: block;
+        opacity: 1;
+        visibility: visible;
+        transition:
+          opacity 0.35s ease,
+          visibility 0s linear 0s;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        body { transition: none; }
+        .theme-pane { transition: opacity 0s, visibility 0s; }
       }
     </style>
   </body>
