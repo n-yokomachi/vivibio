@@ -2,34 +2,34 @@
 
 > **vivid** × **vivere** × **bio**
 
-vivibio は、作成者のプロフィールやSNSなどのリンクを集約するためのサイトです。
-NFCカードのデザインも含んでいます。
+vivibio is a site that aggregates the author's profile and social links.
+It also includes NFC card design assets.
 
-[English README](./README.en.md)
+[日本語 README](./README.ja.md)
 
 ---
 
-## 🛠️ 技術スタック
+## 🛠️ Tech Stack
 
-| カテゴリ | 採用技術 |
+| Category | Technology |
 |---|---|
-| フレームワーク | Astro |
-| 言語 | TypeScript |
-| ホスティング | Cloudflare Pages |
+| Framework | Astro |
+| Language | TypeScript |
+| Hosting | Cloudflare Pages |
 
 
-## 🚀 セットアップ
+## 🚀 Setup
 
-> プロジェクト初期化後に追記予定
+> To be filled in after project initialization
 
 ```bash
-# 開発サーバー起動
+# Start the dev server
 npm run dev
 
-# 本番ビルド
+# Production build
 npm run build
 ```
 
-## 📄 ライセンス
+## 📄 License
 
-[MIT License](./LICENSE) の下で公開しています。
+Released under the [MIT License](./LICENSE).
