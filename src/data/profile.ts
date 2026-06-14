@@ -36,6 +36,7 @@ export const LINKS: LinkItem[] = [
   { id: 'devto',       label: 'Dev.to',          handle: 'yokomachi',           url: 'https://dev.to/yokomachi',                                                                                category: 'writing' },
   { id: 'speakerdeck', label: 'SpeakerDeck',     handle: 'yokomachi',           url: 'https://speakerdeck.com/yokomachi',                                                                       category: 'talks'   },
   { id: 'linkedin',    label: 'LinkedIn',        handle: 'in/yokomachi',        url: 'https://www.linkedin.com/in/yokomachi/',                                                                  category: 'social'  },
+  { id: 'note',        label: 'note',            handle: '_cityside',           url: 'https://note.com/_cityside',                                                                              category: 'writing' },
   { id: 'credly',      label: 'Credly',          handle: 'yokomachi',           url: 'https://www.credly.com/users/yokomachi',                                                                  category: 'creds'   },
   { id: 'lapras',      label: 'Lapras',          handle: 'yokomachi',           url: 'https://lapras.com/public/yokomachi',                                                                     category: 'creds'   },
   { id: 'connpass',    label: 'Connpass',        handle: 'duplicate1984',       url: 'https://connpass.com/user/duplicate1984/',                                                                category: 'talks'   },
