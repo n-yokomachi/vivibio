@@ -103,7 +103,9 @@ const {
         -moz-osx-font-smoothing: grayscale;
         overscroll-behavior-y: none;
         /* Stack all theme panes in the same grid cell so they can cross-fade
-           when data-theme changes. */
+           when data-theme changes. position:relative makes body the containing
+           block for the absolutely-positioned inactive panes below. */
+        position: relative;
         display: grid;
         grid-template-columns: 1fr;
         transition:
@@ -116,6 +118,18 @@ const {
       .theme-pane {
         grid-column: 1;
         grid-row: 1;
+        /* Inactive panes are taken out of flow so the document height tracks
+           only the active theme. Otherwise the tallest pane (concrete) would
+           stretch the shared grid cell and leave trailing whitespace under the
+           shorter themes. height:100% + overflow:hidden clips each inactive
+           pane to the active theme's height so it adds no extra scroll region
+           (absolutely-positioned elements still extend scrollable overflow). */
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
         opacity: 0;
         visibility: hidden;
         transition:
@@ -126,6 +140,10 @@ const {
       :root[data-theme='glitch'] .theme-pane[data-theme='glitch'],
       :root[data-theme='particle'] .theme-pane[data-theme='particle'],
       :root[data-theme='concrete'] .theme-pane[data-theme='concrete'] {
+        /* The active pane returns to normal flow and defines the page height. */
+        position: relative;
+        height: auto;
+        overflow: visible;
         opacity: 1;
         visibility: visible;
         transition:
