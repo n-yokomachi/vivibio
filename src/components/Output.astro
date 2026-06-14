@@ -1,13 +1,10 @@
 ---
 import { OUTPUTS } from '../data/profile.ts';
-
-const today = new Date().toISOString().slice(0, 10);
 ---
 
 <section class="mn-section">
   <div class="mn-section-h">
     <h2>Output</h2>
-    <span class="count mn-mono">{today}</span>
   </div>
   <div class="mn-outputs">
     {
@@ -43,14 +40,6 @@ const today = new Date().toISOString().slice(0, 10);
     margin: 0;
     color: rgba(26, 26, 26, 0.55);
   }
-  .mn-section-h .count {
-    font-size: 11px;
-    color: rgba(26, 26, 26, 0.4);
-  }
-  .mn-mono {
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
-  }
-
   .mn-outputs {
     display: flex;
     flex-direction: column;
