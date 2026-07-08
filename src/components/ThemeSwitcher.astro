@@ -185,12 +185,6 @@ const themes = [
     });
   }
 
-  // Expose applyTheme so the first-visit tutorial (ThemeTutorial.astro) can
-  // settle on the target theme and update aria-current + localStorage in one go.
-  ;(window as unknown as { vivibioApplyTheme?: (t: ThemeId) => void }).vivibioApplyTheme = (t) => {
-    if (isAllowed(t)) applyTheme(t);
-  };
-
   // Initialize aria-current from current theme (set by inline script in BaseLayout)
   const initial = isAllowed(root.dataset.theme ?? null) ? (root.dataset.theme as ThemeId) : 'void';
   applyTheme(initial, { persist: false });
