@@ -517,6 +517,7 @@ git commit -m "refactor(theme): 初回テーマツアー(ThemeTutorial)を廃止
     display: block;
   }
   .gate-enter {
+    margin-top: 36px;
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 13px;
     letter-spacing: 0.18em;
