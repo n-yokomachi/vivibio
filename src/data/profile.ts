@@ -27,6 +27,11 @@ export const PROFILE = {
   githubId: 45911707,
 } as const;
 
+export const CREDENTIALS = [
+  'AWS Community Builders : AI Engineering',
+  '2026 Japan All AWS Certifications Engineers',
+] as const;
+
 export const LINKS: LinkItem[] = [
   { id: 'github',      label: 'GitHub',          handle: 'n-yokomachi',         url: 'https://github.com/n-yokomachi',                                                                          category: 'code'    },
   { id: 'x',           label: 'X',               handle: '@_cityside',          url: 'https://twitter.com/_cityside',                                                                           category: 'social'  },

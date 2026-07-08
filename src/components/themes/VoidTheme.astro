@@ -1,5 +1,5 @@
 ---
-import { PROFILE, LINKS, OUTPUTS } from '../../data/profile';
+import { PROFILE, LINKS, OUTPUTS, CREDENTIALS } from '../../data/profile';
 
 const CATEGORY_ORDER = ['code', 'writing', 'talks', 'social', 'creds', 'design', 'self', 'contact'];
 const sortedLinks = [...LINKS].sort(
@@ -13,6 +13,10 @@ const sortedLinks = [...LINKS].sort(
       <span class="vd-prompt" aria-hidden="true">&gt;</span>
       {PROFILE.name} ({PROFILE.handle}) — {PROFILE.title}
     </h1>
+    <p class="vd-name-ja">{PROFILE.nameJa}（よこまち なおき）</p>
+    <ul class="vd-creds">
+      {CREDENTIALS.map((c) => <li>{c}</li>)}
+    </ul>
     <p class="vd-bio">{PROFILE.bio}</p>
   </header>
 
@@ -77,6 +81,18 @@ const sortedLinks = [...LINKS].sort(
   }
   .vd-prompt {
     color: var(--void-accent);
+  }
+  .vd-name-ja {
+    margin: 0 0 14px;
+    font-size: 11px;
+    color: #555;
+    letter-spacing: 0.06em;
+  }
+  .vd-creds {
+    list-style: none;
+    margin: 0 0 14px;
+    padding: 0;
+    color: #c2c2c2;
   }
   .vd-bio {
     margin: 0;

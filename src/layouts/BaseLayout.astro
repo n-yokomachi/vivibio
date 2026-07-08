@@ -1,26 +1,47 @@
 ---
-import { PROFILE, LINKS } from '../data/profile';
+import { PROFILE, LINKS, CREDENTIALS } from '../data/profile';
 
 interface Props {
   title?: string;
   description?: string;
 }
 
+const SITE_URL = Astro.site?.href ?? 'https://vivibio.pages.dev';
+
 const {
   title = "Vivibio - yoko's Profile",
-  description = 'vivibio — digital business card of Naoki Yokomachi (横町直樹 / yoko / _cityside / yokomachi), Software Engineer / AI Engineer based in Tokyo, Japan.',
+  description = 'vivibio — digital business card of Naoki Yokomachi (横町直樹・よこまち / yoko / _cityside / yokomachi), Software Engineer / AI Engineer based in Tokyo, Japan. AWS Community Builders (AI Engineering).',
 } = Astro.props;
 
 // SEO: schema.org Person（検索エンジン向けの不可視データ。
-// 対象ワード naoki yokomachi / 横町直樹 / yoko / _cityside / yokomachi をここで担う）
+// 横町直樹 / よこまち / yoko / yokomachi / _cityside など想定される表記ゆれをここで網羅する）
 const SAME_AS_IDS = ['github', 'x', 'huggingface', 'zenn', 'qiita', 'devto', 'speakerdeck', 'linkedin', 'note'];
 const personJsonLd = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'Person',
+  '@id': SITE_URL + '#person',
   name: PROFILE.name,
-  alternateName: ['横町直樹', '横町 直樹', 'yoko', 'yokomachi', '_cityside'],
+  givenName: 'Naoki',
+  familyName: 'Yokomachi',
+  alternateName: [
+    '横町直樹',
+    '横町 直樹',
+    'よこまち なおき',
+    'よこまち',
+    'ヨコマチ ナオキ',
+    'Yokomachi Naoki',
+    'yokomachi',
+    'yoko',
+    '_cityside',
+  ],
   jobTitle: PROFILE.title,
-  url: Astro.site?.href ?? 'https://vivibio.pages.dev',
+  description: PROFILE.bio,
+  image: PROFILE.avatarUrl,
+  url: SITE_URL,
+  mainEntityOfPage: SITE_URL,
+  address: { '@type': 'PostalAddress', addressLocality: 'Tokyo', addressCountry: 'JP' },
+  award: [...CREDENTIALS],
+  knowsAbout: ['AWS', 'Generative AI', 'AI Agents', 'Amazon Bedrock', 'TypeScript', 'Python'],
   sameAs: LINKS.filter((l) => SAME_AS_IDS.includes(l.id)).map((l) => l.url),
 });
 ---
@@ -31,7 +52,12 @@ const personJsonLd = JSON.stringify({
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="description" content={description} />
+    <meta
+      name="keywords"
+      content="横町直樹, 横町 直樹, よこまち, よこまちなおき, Naoki Yokomachi, yokomachi, yoko, _cityside, Software Engineer, AI Engineer, AWS"
+    />
     <title>{title}</title>
+    <link rel="canonical" href={SITE_URL} />
     <meta name="theme-color" content="#000000" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -46,7 +72,12 @@ const personJsonLd = JSON.stringify({
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="profile" />
+    <meta property="og:url" content={SITE_URL} />
+    <meta property="og:site_name" content="vivibio" />
+    <meta property="og:image" content={PROFILE.avatarUrl} />
+    <meta property="og:locale" content="ja_JP" />
     <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@_cityside" />
     <script type="application/ld+json" set:html={personJsonLd} />
 
     <script is:inline>

@@ -573,7 +573,6 @@ git commit -m "refactor(theme): 初回テーマツアー(ThemeTutorial)を廃止
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !left) leave();
   });
-  enterBtn.focus({ preventScroll: true });
 
   fetch('/eye-gate-data.json')
     .then((res) => res.json())
@@ -637,12 +636,24 @@ git commit -m "refactor(theme): 初回テーマツアー(ThemeTutorial)を廃止
     }
 
     const ctx = canvas.getContext('2d');
-    const xpx = (k) => PADX + CW * ((k + 1) >> 1) + SUBX[(k + 1) & 1];
-    const ypx = (n) => PADY + CH * (((n + 1) / 4) | 0) + SUBY[(n + 1) % 4];
+    const bx = (k) => PADX + CW * ((k + 1) >> 1) + SUBX[(k + 1) & 1];
+    const by = (n) => PADY + CH * (((n + 1) / 4) | 0) + SUBY[(n + 1) % 4];
+    // アートの実範囲をキャンバス中心に揃えるオフセット
+    let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    for (const [x, y] of master) {
+      minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+    }
+    const W0 = bx(NC - 1) + DOT + PADX;
+    const H0 = by(NR - 1) + DOT + PADY;
+    const OFFX = Math.round(W0 / 2 - (bx(minX) + bx(maxX) + DOT) / 2);
+    const OFFY = Math.round(H0 / 2 - (by(minY) + by(maxY) + DOT) / 2);
+    const xpx = (k) => bx(k) + OFFX;
+    const ypx = (n) => by(n) + OFFY;
     function resizeCanvas() {
       const dpr = window.devicePixelRatio || 1;
-      const W = xpx(NC - 1) + DOT + PADX;
-      const H = ypx(NR - 1) + DOT + PADY;
+      const W = W0;
+      const H = H0;
       canvas.width = W;
       canvas.height = H;
       const cssW = W / dpr, cssH = H / dpr;
