@@ -1,6 +1,9 @@
 ---
 import { PROFILE, LINKS, OUTPUTS, CREDENTIALS } from '../../data/profile';
 
+// bio は「whatever the problem needs.」までを1行に収め、Currently〜 を2行目にする
+const [bioMain, bioNow] = PROFILE.bio.split(/\s+(?=Currently)/);
+
 const CATEGORY_ORDER = ['code', 'writing', 'talks', 'social', 'creds', 'design', 'self', 'contact'];
 const sortedLinks = [...LINKS].sort(
   (a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category)
@@ -14,7 +17,7 @@ const sortedLinks = [...LINKS].sort(
       {PROFILE.name} ({PROFILE.handle}) — {PROFILE.title}
     </h1>
     <p class="vd-creds">{CREDENTIALS[0]}<br />{CREDENTIALS[1]}</p>
-    <p class="vd-bio">{PROFILE.bio}</p>
+    <p class="vd-bio">{bioMain}<br />{bioNow}</p>
   </header>
 
   <section aria-label="links">
@@ -85,7 +88,6 @@ const sortedLinks = [...LINKS].sort(
   }
   .vd-bio {
     margin: 0;
-    max-width: 52ch;
   }
   .vd-rule {
     margin: 36px 0 10px;
