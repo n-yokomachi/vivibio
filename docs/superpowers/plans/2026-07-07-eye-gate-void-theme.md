@@ -489,7 +489,7 @@ git commit -m "refactor(theme): 初回テーマツアー(ThemeTutorial)を廃止
 ```astro
 <div class="gate" id="eye-gate" role="dialog" aria-modal="true" aria-label="entrance">
   <canvas id="eye-canvas" aria-hidden="true"></canvas>
-  <button class="gate-enter" id="gate-enter" type="button" aria-label="enter site">[ enter ]</button>
+  <button class="gate-enter" id="gate-enter" type="button" aria-label="enter to yoko's portfolio">[ enter to yoko's portfolio ]</button>
 </div>
 <noscript><style>#eye-gate { display: none; }</style></noscript>
 
