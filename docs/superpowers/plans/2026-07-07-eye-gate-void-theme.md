@@ -582,8 +582,11 @@ git commit -m "refactor(theme): 初回テーマツアー(ThemeTutorial)を廃止
 
   function initEye(data) {
     const NR = data.nr, NC = data.nc;
-    const CW = 14, CH = 30, SUBX = [0, 5], SUBY = [0, 6, 11, 17];
-    const PADX = 14, PADY = 16, DOT = 3;
+    // 実測格子(動画ネイティブ = dpr2相当): 文字セル14x30px, セル内 x{0,5.5} y{0,5.65,11.3,16.95}, ドット3px。
+    // 見かけのサイズをモニターの dpr に依らず一定(CSSで文字セル7x15px)に保つため、
+    // dpr に応じて整数スケールした格子で描画する。
+    let CW = 14, CH = 30, SUBX = [0, 5], SUBY = [0, 6, 11, 17];
+    let PADX = 14, PADY = 16, DOT = 3;
     const HOLE_MID = data.holeMid;
     const PINK = 'rgb(238,96,195)';
     const GRAY = 'rgb(76,76,76)';
@@ -636,31 +639,45 @@ git commit -m "refactor(theme): 初回テーマツアー(ThemeTutorial)を廃止
       BLINK_ENV[+f] = +v;
     }
 
+    let pupilKey = '';
+    let pupilList = [];
     const ctx = canvas.getContext('2d');
     const bx = (k) => PADX + CW * ((k + 1) >> 1) + SUBX[(k + 1) & 1];
     const by = (n) => PADY + CH * (((n + 1) / 4) | 0) + SUBY[(n + 1) % 4];
-    // アートをキャンバス中心に揃えるオフセット。
-    // 右側の羽根はセルも点灯頻度も疎な非対称形で、知覚上の中心は
-    // 「点灯時間加重の質量中心」(左寄りに見える) と「外接矩形の中心」(右寄りに見える)
-    // の中間にある。全セル等重みの重心がその中間に当たるため、それを採用する。
-    let minY = 1e9, maxY = -1e9, sumX = 0;
-    for (const [x, y] of master) {
-      minY = Math.min(minY, y); maxY = Math.max(maxY, y);
-      sumX += bx(x) + DOT / 2;
+    let W0 = 0, H0 = 0, OFFX = 0, OFFY = 0;
+    let xpx = (k) => bx(k);
+    let ypx = (n) => by(n);
+    function computeLayout() {
+      // dpr2 実測値を基準に、dpr に比例した整数格子を組む(常にドット単位でクリスプ)
+      const sc = (window.devicePixelRatio || 1) / 2;
+      CW = Math.max(4, Math.round(14 * sc));
+      CH = Math.max(8, Math.round(30 * sc));
+      SUBX = [0, Math.round(5.5 * sc)];
+      SUBY = [0, Math.round(5.65 * sc), Math.round(11.3 * sc), Math.round(16.95 * sc)];
+      DOT = Math.max(1, Math.round(3 * sc));
+      PADX = CW; PADY = Math.round(CH / 2);
+      // アートをキャンバス中心に揃えるオフセット。
+      // 右側の羽根はセルも点灯頻度も疎な非対称形のため、知覚上の中心として
+      // 全セル等重みの重心(質量中心と外接矩形中心の中間)を使う。
+      let minY = 1e9, maxY = -1e9, sumX = 0;
+      for (const [x, y] of master) {
+        minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+        sumX += bx(x) + DOT / 2;
+      }
+      W0 = bx(NC - 1) + DOT + PADX;
+      H0 = by(NR - 1) + DOT + PADY;
+      OFFX = Math.round(W0 / 2 - sumX / master.length);
+      OFFY = Math.round(H0 / 2 - (by(minY) + by(maxY) + DOT) / 2);
+      xpx = (k) => bx(k) + OFFX;
+      ypx = (n) => by(n) + OFFY;
     }
-    const W0 = bx(NC - 1) + DOT + PADX;
-    const H0 = by(NR - 1) + DOT + PADY;
-    const OFFX = Math.round(W0 / 2 - sumX / master.length);
-    const OFFY = Math.round(H0 / 2 - (by(minY) + by(maxY) + DOT) / 2);
-    const xpx = (k) => bx(k) + OFFX;
-    const ypx = (n) => by(n) + OFFY;
     function resizeCanvas() {
       const dpr = window.devicePixelRatio || 1;
-      const W = W0;
-      const H = H0;
-      canvas.width = W;
-      canvas.height = H;
-      const cssW = W / dpr, cssH = H / dpr;
+      computeLayout();
+      pupilKey = '';
+      canvas.width = W0;
+      canvas.height = H0;
+      const cssW = W0 / dpr, cssH = H0 / dpr;
       const f = Math.min(1, window.innerWidth * 0.96 / cssW, window.innerHeight * 0.88 / cssH);
       canvas.style.width = (cssW * f) + 'px';
       canvas.style.height = (cssH * f) + 'px';
@@ -678,8 +695,6 @@ git commit -m "refactor(theme): 初回テーマツアー(ThemeTutorial)を廃止
       lastInput = performance.now();
     }
 
-    let pupilKey = '';
-    let pupilList = [];
     function drawPupil(loopFrame) {
       const r = canvas.getBoundingClientRect();
       const ecx = (r.left + r.right) / 2 / window.innerWidth;
