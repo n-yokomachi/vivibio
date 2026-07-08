@@ -30,3 +30,6 @@ pnpm-debug.log*
 
 # brainstorming reference material
 tmp/
+
+# visual companion mockups
+.superpowers/
