@@ -1,4 +1,6 @@
 ---
+import { PROFILE, LINKS } from '../data/profile';
+
 interface Props {
   title?: string;
   description?: string;
@@ -6,8 +8,21 @@ interface Props {
 
 const {
   title = "Vivibio - yoko's Profile",
-  description = 'vivibio — vivid × vivere × bio. A digital business card for Naoki Yokomachi.',
+  description = 'vivibio — digital business card of Naoki Yokomachi (横町直樹 / yoko / _cityside / yokomachi), Software Engineer / AI Engineer based in Tokyo, Japan.',
 } = Astro.props;
+
+// SEO: schema.org Person（検索エンジン向けの不可視データ。
+// 対象ワード naoki yokomachi / 横町直樹 / yoko / _cityside / yokomachi をここで担う）
+const SAME_AS_IDS = ['github', 'x', 'huggingface', 'zenn', 'qiita', 'devto', 'speakerdeck', 'linkedin', 'note'];
+const personJsonLd = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: PROFILE.name,
+  alternateName: ['横町直樹', '横町 直樹', 'yoko', 'yokomachi', '_cityside'],
+  jobTitle: PROFILE.title,
+  url: Astro.site?.href ?? 'https://vivibio.pages.dev',
+  sameAs: LINKS.filter((l) => SAME_AS_IDS.includes(l.id)).map((l) => l.url),
+});
 ---
 
 <!doctype html>
@@ -32,6 +47,7 @@ const {
     <meta property="og:description" content={description} />
     <meta property="og:type" content="profile" />
     <meta name="twitter:card" content="summary" />
+    <script type="application/ld+json" set:html={personJsonLd} />
 
     <script is:inline>
       (function () {
