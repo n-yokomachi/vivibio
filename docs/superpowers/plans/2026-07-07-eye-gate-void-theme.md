@@ -639,31 +639,17 @@ git commit -m "refactor(theme): 初回テーマツアー(ThemeTutorial)を廃止
     const bx = (k) => PADX + CW * ((k + 1) >> 1) + SUBX[(k + 1) & 1];
     const by = (n) => PADY + CH * (((n + 1) / 4) | 0) + SUBY[(n + 1) % 4];
     // アートをキャンバス中心に揃えるオフセット。
-    // 右側の羽根はセルも点灯頻度も疎な非対称形のため、横は
-    // 「点灯時間で重み付けした質量中心」を知覚上の中心として使う。縦は外接矩形の中心。
-    let minY = 1e9, maxY = -1e9;
-    for (const [, y] of master) {
+    // 右側の羽根はセルも点灯頻度も疎な非対称形で、知覚上の中心は
+    // 「点灯時間加重の質量中心」(左寄りに見える) と「外接矩形の中心」(右寄りに見える)
+    // の中間にある。全セル等重みの重心がその中間に当たるため、それを採用する。
+    let minY = 1e9, maxY = -1e9, sumX = 0;
+    for (const [x, y] of master) {
       minY = Math.min(minY, y); maxY = Math.max(maxY, y);
-    }
-    const st = Uint8Array.from(state);
-    let runX = 0, runN = 0, accX = 0, accN = 0;
-    for (let i = 0; i < master.length; i++) {
-      if (st[i]) { runX += bx(master[i][0]) + DOT / 2; runN++; }
-    }
-    for (let k = 0; k < NF; k++) {
-      if (k > 0) {
-        for (const i of stepDelta[k]) {
-          const px = bx(master[i][0]) + DOT / 2;
-          if (st[i]) { runX -= px; runN--; st[i] = 0; }
-          else { runX += px; runN++; st[i] = 1; }
-        }
-      }
-      accX += runX * stepDur[k];
-      accN += runN * stepDur[k];
+      sumX += bx(x) + DOT / 2;
     }
     const W0 = bx(NC - 1) + DOT + PADX;
     const H0 = by(NR - 1) + DOT + PADY;
-    const OFFX = Math.round(W0 / 2 - accX / accN);
+    const OFFX = Math.round(W0 / 2 - sumX / master.length);
     const OFFY = Math.round(H0 / 2 - (by(minY) + by(maxY) + DOT) / 2);
     const xpx = (k) => bx(k) + OFFX;
     const ypx = (n) => by(n) + OFFY;
