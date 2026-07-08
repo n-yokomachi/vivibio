@@ -55,7 +55,7 @@ print('ok:', len(d['init']), 'bits,', len(d['blink'].split(';')), 'blink entries
 EOF
 ```
 
-Expected: `ok: 4093 bits, 39 blink entries`
+Expected: `ok: 4093 bits, 40 blink entries`
 
 - [ ] **Step 2: コミット**
 
@@ -530,6 +530,13 @@ git commit -m "refactor(theme): 初回テーマツアー(ThemeTutorial)を廃止
   .gate-enter:hover,
   .gate-enter:focus-visible {
     color: var(--void-accent);
+  }
+  .gate-enter:focus-visible {
+    outline: 1px solid var(--void-accent);
+    outline-offset: 4px;
+  }
+  .gate-enter:focus:not(:focus-visible) {
+    outline: none;
   }
 </style>
 

@@ -42,6 +42,13 @@
   .gate-enter:focus-visible {
     color: var(--void-accent);
   }
+  .gate-enter:focus-visible {
+    outline: 1px solid var(--void-accent);
+    outline-offset: 4px;
+  }
+  .gate-enter:focus:not(:focus-visible) {
+    outline: none;
+  }
 </style>
 
 <script>
