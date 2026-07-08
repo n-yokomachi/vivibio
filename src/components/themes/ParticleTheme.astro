@@ -380,6 +380,9 @@ const linkCount = String(LINKS.length).padStart(2, '0');
 </style>
 
 <script>
+  const isParticleActive = () => document.documentElement.dataset.theme === 'particle';
+  // 非アクティブで自主停止した rAF ループをテーマ復帰時に再開するフック
+  const particleResume: Array<() => void> = [];
   function initParticleEffects() {
     if ((window as any).__particleInited) return;
     (window as any).__particleInited = true;
@@ -388,6 +391,7 @@ const linkCount = String(LINKS.length).padStart(2, '0');
     const clockEl = document.querySelector<HTMLElement>('[data-particle-clock]');
     if (clockEl) {
       const tick = () => {
+        if (!isParticleActive()) return;
         const now = new Date();
         const hh = String(now.getHours()).padStart(2, '0');
         const mm = String(now.getMinutes()).padStart(2, '0');
@@ -403,6 +407,7 @@ const linkCount = String(LINKS.length).padStart(2, '0');
       const dots = Array.from(bracket.querySelectorAll<HTMLElement>('span'));
       let bIdx = 0;
       setInterval(() => {
+        if (!isParticleActive()) return;
         dots.forEach((d, i) => d.classList.toggle('on', i === bIdx || i === (bIdx + 2) % 5 || i === (bIdx + 4) % 5));
         bIdx = (bIdx + 1) % 5;
       }, 500);
@@ -650,6 +655,7 @@ const linkCount = String(LINKS.length).padStart(2, '0');
     let raf = 0;
     let t = 0;
     function tick() {
+      if (!isParticleActive()) return;
       if (!ctx) return;
       t += 0.008;
 
@@ -840,6 +846,10 @@ const linkCount = String(LINKS.length).padStart(2, '0');
     spawnParticles();
     let lastW = w;
     raf = requestAnimationFrame(tick);
+    particleResume.push(() => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(tick);
+    });
 
     // Mobile では URL バー折りたたみで viewport 高さだけ変わって再発火するため、
     // 幅が大きく変わったとき (オリエンテーション変更/ウィンドウリサイズ) だけ
@@ -857,21 +867,22 @@ const linkCount = String(LINKS.length).padStart(2, '0');
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         cancelAnimationFrame(raf);
-      } else {
+      } else if (isParticleActive()) {
         raf = requestAnimationFrame(tick);
       }
     });
   }
 
-  if (document.documentElement.dataset.theme === 'particle') {
+  // 初回アクティブ時に初期化、以降はテーマ復帰のたびに rAF ループを再開する。
+  if (isParticleActive()) {
     initParticleEffects();
-  } else {
-    const observer = new MutationObserver(() => {
-      if (document.documentElement.dataset.theme === 'particle') {
-        initParticleEffects();
-        observer.disconnect();
-      }
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
+  new MutationObserver(() => {
+    if (!isParticleActive()) return;
+    if (!(window as any).__particleInited) {
+      initParticleEffects();
+    } else {
+      particleResume.forEach((fn) => fn());
+    }
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 </script>

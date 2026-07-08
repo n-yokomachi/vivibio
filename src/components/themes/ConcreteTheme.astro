@@ -1457,6 +1457,9 @@ const gridCoord = (i: number) => {
 </style>
 
 <script>
+  const isConcreteActive = () => document.documentElement.dataset.theme === 'concrete';
+  // テーマ復帰時に即時実行するフック(時計の即時更新など)
+  const concreteResume: Array<() => void> = [];
   function initConcreteEffects() {
     if ((window as any).__concreteInited) return;
     (window as any).__concreteInited = true;
@@ -1465,6 +1468,7 @@ const gridCoord = (i: number) => {
     const clockEls = document.querySelectorAll<HTMLElement>('[data-cc-clock]');
     if (clockEls.length > 0) {
       const updateClock = () => {
+        if (!isConcreteActive()) return;
         const d = new Date();
         const hh = String(d.getHours()).padStart(2, '0');
         const mm = String(d.getMinutes()).padStart(2, '0');
@@ -1475,6 +1479,7 @@ const gridCoord = (i: number) => {
       };
       updateClock();
       setInterval(updateClock, 60_000);
+      concreteResume.push(updateClock);
     }
 
     // ----- Hover readout (room hover/touchstart で表示) -----
@@ -1529,16 +1534,16 @@ const gridCoord = (i: number) => {
     }
   }
 
-  // 初期 data-theme が concrete のときは即時、そうでなければ MutationObserver で待つ
-  if (document.documentElement.dataset.theme === 'concrete') {
+  // 初回アクティブ時に初期化、以降はテーマ復帰のたびに resume を実行する
+  if (isConcreteActive()) {
     initConcreteEffects();
-  } else {
-    const observer = new MutationObserver(() => {
-      if (document.documentElement.dataset.theme === 'concrete') {
-        initConcreteEffects();
-        observer.disconnect();
-      }
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
+  new MutationObserver(() => {
+    if (!isConcreteActive()) return;
+    if (!(window as any).__concreteInited) {
+      initConcreteEffects();
+    } else {
+      concreteResume.forEach((fn) => fn());
+    }
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 </script>

@@ -478,6 +478,9 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
 
 <script>
   // Run only when Glitch theme is active (lazy init via observer)
+  const isGlitchActive = () => document.documentElement.dataset.theme === 'glitch';
+  // 非アクティブで自主停止した rAF ループをテーマ復帰時に再開するフック
+  const glitchResume: Array<() => void> = [];
   function initGlitchEffects() {
     // Already initialized?
     if ((window as any).__glitchInited) return;
@@ -487,6 +490,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
     const clockEl = document.querySelector<HTMLElement>('[data-glitch-clock]');
     if (clockEl) {
       const tick = () => {
+        if (!isGlitchActive()) return;
         const now = new Date();
         const hh = String(now.getHours()).padStart(2, '0');
         const mm = String(now.getMinutes()).padStart(2, '0');
@@ -514,6 +518,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
     const mhzEl = document.querySelector<HTMLElement>('[data-glitch-mhz]');
     if (mhzEl) {
       const updateMhz = () => {
+        if (!isGlitchActive()) return;
         const intPart = 100 + Math.floor(Math.random() * 900); // 100–999
         const decPart = Math.floor(Math.random() * 10);        // 0–9
         mhzEl.textContent = `${intPart}.${decPart}MHz`;
@@ -530,6 +535,10 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       const speed = 35;
       const pauseAtEnd = 2200;
       const step = () => {
+        if (!isGlitchActive()) {
+          setTimeout(step, 400);
+          return;
+        }
         if (i <= text.length) {
           tw.textContent = text.slice(0, i);
           i++;
@@ -550,6 +559,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
     shakeEls.forEach((el) => {
       const interval = 1500 + Math.random() * 2000;
       setInterval(() => {
+        if (!isGlitchActive()) return;
         if (Math.random() > 0.5) {
           el.classList.add('gl-shake');
           setTimeout(() => el.classList.remove('gl-shake'), 200);
@@ -580,6 +590,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
       const minH = 3;
       const maxH = 32;
       const animateBars = () => {
+        if (!isGlitchActive()) return;
         for (const b of state) {
           b.current += (b.target - b.current) * b.speed;
           // Far ghost lags more (stronger trail), near ghost lags less
@@ -598,6 +609,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
         requestAnimationFrame(animateBars);
       };
       animateBars();
+      glitchResume.push(() => requestAnimationFrame(animateBars));
     }
 
     // ----- Glitch RGB-shift wobble (animates --gl-shift-x/y/skew on .gl) -----
@@ -606,6 +618,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
     if (glContainer) {
       let glStart = 0;
       const animateShift = (time: number) => {
+        if (!isGlitchActive()) return;
         if (glStart === 0) glStart = time;
         const t = (time - glStart) / 1000;
         const x = -3 + Math.sin(t * 1.3) * 0.9 + Math.sin(t * 4.7) * 0.25;
@@ -617,6 +630,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
         requestAnimationFrame(animateShift);
       };
       requestAnimationFrame(animateShift);
+      glitchResume.push(() => requestAnimationFrame(animateShift));
     }
 
     // ----- Particle canvas + periodic rocket -----
@@ -698,7 +712,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
         function scheduleRocket() {
           const delay = 7000 + Math.random() * 6000; // 7–13 s between launches
           setTimeout(() => {
-            if (!rocketExt.active) launchRocket();
+            if (isGlitchActive() && !rocketExt.active) launchRocket();
             scheduleRocket();
           }, delay);
         }
@@ -846,6 +860,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
 
         let raf = 0;
         function tick() {
+          if (!isGlitchActive()) return;
           if (!ctx) return;
           ctx.clearRect(0, 0, w, h);
 
@@ -966,6 +981,10 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
         spawn();
         let lastW = w;
         tick();
+        glitchResume.push(() => {
+          cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(tick);
+        });
 
         // Mobile では URL バー折りたたみで viewport 高さだけ変わって再発火するため、
         // 幅が大きく変わったとき (オリエンテーション変更/ウィンドウリサイズ) だけ
@@ -983,7 +1002,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
         document.addEventListener('visibilitychange', () => {
           if (document.hidden) {
             cancelAnimationFrame(raf);
-          } else {
+          } else if (isGlitchActive()) {
             tick();
           }
         });
@@ -991,17 +1010,17 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
     }
   }
 
-  // Run on initial load if already on Glitch theme, otherwise wait
-  if (document.documentElement.dataset.theme === 'glitch') {
+  // 初回アクティブ時に初期化、以降はテーマ復帰のたびに rAF ループを再開する。
+  // 非アクティブ中は各ループが自主停止するため、再生されるテーマは常に1つ。
+  if (isGlitchActive()) {
     initGlitchEffects();
-  } else {
-    // Watch for theme changes; init once Glitch becomes active
-    const observer = new MutationObserver(() => {
-      if (document.documentElement.dataset.theme === 'glitch') {
-        initGlitchEffects();
-        observer.disconnect();
-      }
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
+  new MutationObserver(() => {
+    if (!isGlitchActive()) return;
+    if (!(window as any).__glitchInited) {
+      initGlitchEffects();
+    } else {
+      glitchResume.forEach((fn) => fn());
+    }
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 </script>
