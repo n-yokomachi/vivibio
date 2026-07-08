@@ -13,7 +13,7 @@ const sortedLinks = [...LINKS].sort(
       <span class="vd-prompt" aria-hidden="true">&gt;</span>
       {PROFILE.name} ({PROFILE.handle}) — {PROFILE.title}
     </h1>
-    <p class="vd-creds">{CREDENTIALS.join(' / ')}</p>
+    <p class="vd-creds">{CREDENTIALS[0]}<br />{CREDENTIALS[1]}</p>
     <p class="vd-bio">{PROFILE.bio}</p>
   </header>
 

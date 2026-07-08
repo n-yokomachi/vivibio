@@ -149,15 +149,32 @@
     const ctx = canvas.getContext('2d');
     const bx = (k) => PADX + CW * ((k + 1) >> 1) + SUBX[(k + 1) & 1];
     const by = (n) => PADY + CH * (((n + 1) / 4) | 0) + SUBY[(n + 1) % 4];
-    // アートの実範囲をキャンバス中心に揃えるオフセット
-    let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
-    for (const [x, y] of master) {
-      minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+    // アートをキャンバス中心に揃えるオフセット。
+    // 右側の羽根はセルも点灯頻度も疎な非対称形のため、横は
+    // 「点灯時間で重み付けした質量中心」を知覚上の中心として使う。縦は外接矩形の中心。
+    let minY = 1e9, maxY = -1e9;
+    for (const [, y] of master) {
       minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+    }
+    const st = Uint8Array.from(state);
+    let runX = 0, runN = 0, accX = 0, accN = 0;
+    for (let i = 0; i < master.length; i++) {
+      if (st[i]) { runX += bx(master[i][0]) + DOT / 2; runN++; }
+    }
+    for (let k = 0; k < NF; k++) {
+      if (k > 0) {
+        for (const i of stepDelta[k]) {
+          const px = bx(master[i][0]) + DOT / 2;
+          if (st[i]) { runX -= px; runN--; st[i] = 0; }
+          else { runX += px; runN++; st[i] = 1; }
+        }
+      }
+      accX += runX * stepDur[k];
+      accN += runN * stepDur[k];
     }
     const W0 = bx(NC - 1) + DOT + PADX;
     const H0 = by(NR - 1) + DOT + PADY;
-    const OFFX = Math.round(W0 / 2 - (bx(minX) + bx(maxX) + DOT) / 2);
+    const OFFX = Math.round(W0 / 2 - accX / accN);
     const OFFY = Math.round(H0 / 2 - (by(minY) + by(maxY) + DOT) / 2);
     const xpx = (k) => bx(k) + OFFX;
     const ypx = (n) => by(n) + OFFY;
