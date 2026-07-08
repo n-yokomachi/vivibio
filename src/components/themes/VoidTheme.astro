@@ -1,0 +1,150 @@
+---
+import { PROFILE, LINKS, OUTPUTS } from '../../data/profile';
+
+const CATEGORY_ORDER = ['code', 'writing', 'talks', 'social', 'creds', 'design', 'self', 'contact'];
+const sortedLinks = [...LINKS].sort(
+  (a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category)
+);
+---
+
+<div class="void">
+  <header class="vd-head">
+    <h1 class="vd-name">
+      <span class="vd-prompt" aria-hidden="true">&gt;</span>
+      {PROFILE.name} ({PROFILE.handle}) — {PROFILE.title}
+    </h1>
+    <p class="vd-bio">{PROFILE.bio}</p>
+  </header>
+
+  <section aria-label="links">
+    <h2 class="vd-rule">-- links --------------------------------</h2>
+    <ul class="vd-list">
+      {
+        sortedLinks.map((l) => (
+          <li>
+            <a class="vd-row vd-lrow" href={l.url} target="_blank" rel="noopener noreferrer">
+              <span class="vd-cat">{l.category}</span>
+              <span class="vd-label">{l.label}</span>
+              <span class="vd-handle">{l.handle}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section aria-label="outputs">
+    <h2 class="vd-rule">-- outputs ------------------------------</h2>
+    <ul class="vd-list">
+      {
+        OUTPUTS.map((o) => (
+          <li>
+            <a class="vd-row vd-orow" href={o.url} target="_blank" rel="noopener noreferrer">
+              <span class="vd-cat">{o.badge}</span>
+              <span class="vd-title">{o.title}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <footer class="vd-status">
+    <span class="vd-dot" aria-hidden="true"></span>
+    <span>tokyo, japan</span>
+  </footer>
+</div>
+
+<style>
+  .void {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 72px 20px 56px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px;
+    line-height: 1.9;
+    color: #9a9a9a;
+  }
+  .vd-head {
+    margin-bottom: 40px;
+  }
+  .vd-name {
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #eee;
+  }
+  .vd-prompt {
+    color: var(--void-accent);
+  }
+  .vd-bio {
+    margin: 0;
+    max-width: 52ch;
+  }
+  .vd-rule {
+    margin: 36px 0 10px;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: #555;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .vd-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .vd-row {
+    display: grid;
+    grid-template-columns: 9ch 14ch 1fr;
+    gap: 0 16px;
+    padding: 1px 0;
+    text-decoration: none;
+    color: #9a9a9a;
+    transition: color 0.15s ease;
+  }
+  .vd-orow {
+    grid-template-columns: 9ch 1fr;
+  }
+  .vd-cat {
+    color: #555;
+    transition: color 0.15s ease;
+  }
+  .vd-handle,
+  .vd-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .vd-row:hover,
+  .vd-row:focus-visible,
+  .vd-row:hover .vd-cat,
+  .vd-row:focus-visible .vd-cat {
+    color: var(--void-accent);
+  }
+  .vd-status {
+    margin-top: 48px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #555;
+    font-size: 11px;
+  }
+  .vd-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3adb76;
+    box-shadow: 0 0 6px rgba(58, 219, 118, 0.8);
+  }
+  @media (max-width: 520px) {
+    .vd-lrow {
+      grid-template-columns: 13ch 1fr;
+    }
+    .vd-lrow .vd-cat {
+      display: none;
+    }
+  }
+</style>

@@ -17,7 +17,7 @@ const {
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="description" content={description} />
     <title>{title}</title>
-    <meta name="theme-color" content="#f7f6f3" />
+    <meta name="theme-color" content="#000000" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
@@ -37,20 +37,24 @@ const {
       (function () {
         try {
           var hash = location.hash.slice(1);
-          var stored = localStorage.getItem('vivibio-theme');
-          var allowed = ['minimal', 'glitch', 'particle', 'concrete'];
-          var theme =
-            allowed.indexOf(hash) >= 0
-              ? hash
-              : allowed.indexOf(stored) >= 0
-                ? stored
-                : 'minimal';
-          document.documentElement.dataset.theme = theme;
+          var allowed = ['void', 'minimal', 'glitch', 'particle', 'concrete'];
+          document.documentElement.dataset.theme = allowed.indexOf(hash) >= 0 ? hash : 'void';
         } catch (e) {
-          document.documentElement.dataset.theme = 'minimal';
+          document.documentElement.dataset.theme = 'void';
         }
       })();
     </script>
+    <noscript>
+      <style>
+        .theme-pane[data-theme='void'] {
+          position: relative;
+          height: auto;
+          overflow: visible;
+          opacity: 1;
+          visibility: visible;
+        }
+      </style>
+    </noscript>
   </head>
   <body>
     <slot />
@@ -71,11 +75,20 @@ const {
         overflow-x: hidden;
       }
 
-      /* Fallback before data-theme attribute is set (no-JS / pre-script paint) */
+      :root {
+        --void-accent: #ff4d9e;
+      }
+      /* Fallback before data-theme attribute is set (no-JS / pre-script paint).
+         The entry gate paints black first, so the fallback is dark. */
       body {
-        background: #f7f6f3;
-        color: #1a1a1a;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+        background: #000;
+        color: #9a9a9a;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+      }
+      :root[data-theme='void'] body {
+        background: #000;
+        color: #9a9a9a;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
       }
 
       :root[data-theme='minimal'] body {
@@ -136,6 +149,7 @@ const {
           opacity 0.35s ease,
           visibility 0s linear 0.35s;
       }
+      :root[data-theme='void'] .theme-pane[data-theme='void'],
       :root[data-theme='minimal'] .theme-pane[data-theme='minimal'],
       :root[data-theme='glitch'] .theme-pane[data-theme='glitch'],
       :root[data-theme='particle'] .theme-pane[data-theme='particle'],

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import VoidTheme from '../components/themes/VoidTheme.astro';
 import MinimalTheme from '../components/themes/MinimalTheme.astro';
 import GlitchTheme from '../components/themes/GlitchTheme.astro';
 import ParticleTheme from '../components/themes/ParticleTheme.astro';
@@ -9,6 +10,9 @@ import ThemeTutorial from '../components/ThemeTutorial.astro';
 ---
 
 <BaseLayout>
+  <main class="theme-pane" data-theme="void">
+    <VoidTheme />
+  </main>
   <main class="theme-pane" data-theme="minimal">
     <MinimalTheme />
   </main>

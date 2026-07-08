@@ -1,5 +1,6 @@
 ---
 const themes = [
+  { id: 'void', label: 'VOID' },
   { id: 'minimal', label: 'MINIMAL' },
   { id: 'glitch', label: 'GLITCH' },
   { id: 'particle', label: 'PARTICLE' },
@@ -10,8 +11,14 @@ const themes = [
 <aside class="ts" data-open="false" aria-label="Theme switcher">
   {
     themes.map((t) => (
-      <button class="ts-btn" data-theme-target={t.id} aria-current={t.id === 'minimal' ? 'true' : 'false'}>
+      <button class="ts-btn" data-theme-target={t.id} aria-current={t.id === 'void' ? 'true' : 'false'}>
         <span class="ts-icon">
+          {t.id === 'void' && (
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M2.5 12C5 7.5 8.5 5.5 12 5.5s7 2 9.5 6.5c-2.5 4.5-6 6.5-9.5 6.5S5 16.5 2.5 12Z" />
+              <circle cx="12" cy="12" r="2.6" fill="#ff4d9e" stroke="none" />
+            </svg>
+          )}
           {t.id === 'minimal' && (
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
               <rect x="3.5" y="3.5" width="17" height="17" rx="3" />
@@ -108,6 +115,10 @@ const themes = [
   .ts-btn[aria-current='true'] {
     border-color: #ff5733;
   }
+  :root[data-theme='void'] .ts-btn[aria-current='true'] {
+    border-color: #ff4d9e;
+    box-shadow: -4px 0 16px rgba(255, 77, 158, 0.25);
+  }
   :root[data-theme='glitch'] .ts-btn[aria-current='true'] {
     border-color: #ff2d8d;
     box-shadow: -4px 0 16px rgba(255, 45, 141, 0.25);
@@ -149,7 +160,7 @@ const themes = [
 </style>
 
 <script>
-  const ALLOWED = ['minimal', 'glitch', 'particle', 'concrete'] as const;
+  const ALLOWED = ['void', 'minimal', 'glitch', 'particle', 'concrete'] as const;
   type ThemeId = (typeof ALLOWED)[number];
 
   const root = document.documentElement;
@@ -181,7 +192,7 @@ const themes = [
   };
 
   // Initialize aria-current from current theme (set by inline script in BaseLayout)
-  const initial = isAllowed(root.dataset.theme ?? null) ? (root.dataset.theme as ThemeId) : 'minimal';
+  const initial = isAllowed(root.dataset.theme ?? null) ? (root.dataset.theme as ThemeId) : 'void';
   applyTheme(initial, { persist: false });
 
   // Click handler — switch theme via hash
