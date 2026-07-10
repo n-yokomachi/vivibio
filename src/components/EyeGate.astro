@@ -68,6 +68,7 @@
 
   let left = false;
   let rafId = 0;
+  let resumeEye = null;   // initEye 完了後に rAF 再開関数が入る
 
   function leave() {
     if (left) return;
@@ -85,6 +86,16 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !left) leave();
   });
+
+  // void テーマの [ back to the eye ] から呼ばれる復帰ルート
+  window.vivibioShowGate = () => {
+    if (!left) return;
+    left = false;
+    document.body.style.overflow = 'hidden';
+    gate.classList.remove('gone');
+    gate.classList.remove('leaving');
+    if (resumeEye) resumeEye();
+  };
 
   fetch('/eye-gate-data.json')
     .then((res) => res.json())
@@ -297,5 +308,9 @@
     window.addEventListener('pointermove', onPoint, { passive: true });
     window.addEventListener('pointerdown', onPoint, { passive: true });
     rafId = requestAnimationFrame(draw);
+    resumeEye = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(draw);
+    };
   }
 </script>

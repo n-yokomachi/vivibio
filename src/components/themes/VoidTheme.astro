@@ -57,7 +57,15 @@ const sortedLinks = [...LINKS].sort(
     <span class="vd-dot" aria-hidden="true"></span>
     <span>tokyo, japan</span>
   </footer>
+
+  <button class="vd-back" id="vd-back" type="button">[ back to the eye ]</button>
 </div>
+
+<script>
+  document.getElementById('vd-back')?.addEventListener('click', () => {
+    (window as any).vivibioShowGate?.();
+  });
+</script>
 
 <style>
   .void {
@@ -138,6 +146,22 @@ const sortedLinks = [...LINKS].sort(
     gap: 8px;
     color: #555;
     font-size: 11px;
+  }
+  .vd-back {
+    margin-top: 28px;
+    padding: 0;
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: #555;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .vd-back:hover,
+  .vd-back:focus-visible {
+    color: var(--void-accent);
   }
   .vd-dot {
     width: 7px;
