@@ -148,7 +148,8 @@ TALK     AI Agent Builders Meetup #2
 
 対象ワード: `naoki yokomachi` / `横町直樹` / `yoko` / `_cityside` / `yokomachi`
 
-方針: **タブに表示される `<title>` は現状のままクリーンに保つ**。SEO ワードは不可視の場所に仕込む。
+方針: 当初は `<title>` をクリーンに保つ予定だったが、名前検索での上位表示を優先し
+`Naoki Yokomachi (横町直樹) | vivibio` に変更（2026-07-10 オーナー判断）。その他の SEO ワードは不可視の場所に仕込む。
 
 1. **JSON-LD 構造化データ（schema.org Person）を BaseLayout に追加**（主戦力）:
    - `name`: Naoki Yokomachi
