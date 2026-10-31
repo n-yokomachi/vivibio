@@ -33,7 +33,7 @@
 - void の名前の行と bio は英語と日本語の2枚のレイヤーで、カーソルの周りの円の中だけ日本語を見せる
 - EyeGate は毎回表示する。JS 無効時は noscript で非表示にし、`prefers-reduced-motion` では静止画にする
 - テーマを追加するときは、テーマのコンポーネント、`index.astro` のペイン、`ThemeSwitcher.astro` の `ALLOWED` とボタン、`BaseLayout.astro` の初期判定スクリプトの `allowed` 配列とペインの表示切り替えの CSS をそろえて変更する
-- title は `Naoki Yokomachi (横町直樹 / yoko) | vivibio`。名前検索での上位表示を優先したオーナーの判断で氏名を入れている。ほかの検索語は JSON-LD の `alternateName` と meta description に入れる
+- title は `Portfolio | Naoki Yokomachi (yoko/横町直樹)`。名前検索での上位表示を優先したオーナーの判断で氏名を入れている。ほかの検索語は JSON-LD の `alternateName` と meta description に入れる
 
 ## ファイルの扱い
 
