@@ -15,24 +15,25 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
 ---
 
 <div class="void">
-  <header class="vd-head vd-bilingual" id="vd-bilingual">
-    <div class="vd-layer vd-en">
-      <h1 class="vd-name">
-        <span class="vd-prompt" aria-hidden="true">&gt;</span>
-        {PROFILE.name} ({PROFILE.handle}) — {PROFILE.title}
-      </h1>
-      <p class="vd-creds">{CREDENTIALS[0]}<br />{CREDENTIALS[1]}</p>
-      <p class="vd-bio">{bioMain}<br />{bioNow}</p>
+  <header class="vd-head">
+    <div class="vd-bilingual" id="vd-bilingual">
+      <div class="vd-layer vd-en">
+        <h1 class="vd-name">
+          <span class="vd-prompt" aria-hidden="true">&gt;</span>
+          {PROFILE.name} ({PROFILE.handle}) — {PROFILE.title}
+        </h1>
+        <p class="vd-bio">{bioMain}<br />{bioNow}</p>
+      </div>
+      <div class="vd-layer vd-ja" lang="ja" aria-hidden="true">
+        <p class="vd-name">
+          <span class="vd-prompt">&gt;</span>
+          {PROFILE.nameJa} ({PROFILE.handle}) — ソフトウェアエンジニア / AIエンジニア
+        </p>
+        <p class="vd-bio">{bioJaMain}<br />{bioJaNow}</p>
+      </div>
+      <div class="vd-ring-layer" aria-hidden="true"><span class="vd-ring"></span></div>
     </div>
-    <div class="vd-layer vd-ja" lang="ja" aria-hidden="true">
-      <p class="vd-name">
-        <span class="vd-prompt">&gt;</span>
-        {PROFILE.nameJa} ({PROFILE.handle}) — ソフトウェアエンジニア / AIエンジニア
-      </p>
-      <p class="vd-creds">{CREDENTIALS[0]}<br />{CREDENTIALS[1]}</p>
-      <p class="vd-bio">{bioJaMain}<br />{bioJaNow}</p>
-    </div>
-    <div class="vd-ring-layer" aria-hidden="true"><span class="vd-ring"></span></div>
+    <p class="vd-creds">{CREDENTIALS[0]}<br />{CREDENTIALS[1]}</p>
   </header>
 
   <section aria-label="links">
@@ -151,11 +152,11 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
     color: var(--void-accent);
   }
   .vd-creds {
-    margin: 0 0 14px;
+    margin: 0;
     color: var(--vd-creds);
   }
   .vd-bio {
-    margin: 0;
+    margin: 0 0 14px;
   }
   .vd-rule {
     margin: 36px 0 10px;
