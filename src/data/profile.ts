@@ -3,6 +3,8 @@ export type LinkItem = {
   label: string;
   handle: string;
   url: string;
+  // 粒子で文字を描くときの表記。label が日本語などで描きにくいときだけ指定する
+  swarmLabel?: string;
   category: 'code' | 'social' | 'writing' | 'talks' | 'creds' | 'design' | 'self' | 'contact';
 };
 
@@ -48,7 +50,7 @@ export const LINKS: LinkItem[] = [
   { id: 'figma',       label: 'Figma',           handle: '@yokomachi',          url: 'https://www.figma.com/@yokomachi',                                                                        category: 'design'  },
   { id: '16p',         label: '16Personalities', handle: 'profile',             url: 'https://www.16personalities.com/ja/%E3%83%97%E3%83%AD%E3%83%95%E3%82%A3%E3%83%BC%E3%83%AB/ffd619bb32c18', category: 'self'    },
   { id: 'duolingo',    label: 'Duolingo',        handle: 'yokomachi1',          url: 'https://www.duolingo.com/profile/yokomachi1',                                                             category: 'self'    },
-  { id: 'bukulog',     label: 'ブクログ',         handle: 'yokomachi1',          url: 'https://booklog.jp/users/yokomachi1',                                                                     category: 'self'    },
+  { id: 'bukulog',     label: 'ブクログ',         handle: 'yokomachi1',          url: 'https://booklog.jp/users/yokomachi1',                                                                     category: 'self', swarmLabel: 'BOOKLOG' },
   { id: 'filmarks',    label: 'Filmarks',        handle: 'yokomachi',           url: 'https://filmarks.com/users/yokomachi',                                                                    category: 'self'    },
   { id: 'discord',     label: 'Discord',         handle: 'yokomachi',           url: 'https://discordapp.com/users/750727153871618069',                                                         category: 'social'  },
   { id: 'email',       label: 'Email',           handle: 'asterism.mihono',     url: 'mailto:asterism.mihono@gmail.com',                                                                        category: 'contact' },

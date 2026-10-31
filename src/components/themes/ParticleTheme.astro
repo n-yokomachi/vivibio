@@ -49,7 +49,7 @@ const linkCount = String(LINKS.length).padStart(2, '0');
             rel={l.url.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
           >
             <span class="ic"><LinkIcons id={l.id} /></span>
-            <span class="lab">{l.label}</span>
+            <span class="lab" data-swarm={l.swarmLabel ?? l.label}>{l.label}</span>
           </a>
         ))}
       </div>
@@ -447,7 +447,7 @@ const linkCount = String(LINKS.length).padStart(2, '0');
     // 各 .pa-link にホバー / タッチを仕掛ける
     const linkEls = document.querySelectorAll<HTMLElement>('.pa-link');
     linkEls.forEach((el) => {
-      const label = el.querySelector<HTMLElement>('.lab')?.textContent?.trim() ?? '';
+      const label = el.querySelector<HTMLElement>('.lab')?.dataset.swarm ?? '';
       if (!label) return;
       el.addEventListener('mouseenter', () => field.swarmTo(label));
       el.addEventListener('mouseleave', () => field.scatter());
