@@ -3,6 +3,8 @@ import { PROFILE, LINKS, OUTPUTS, CREDENTIALS } from '../../data/profile';
 
 // bio は「whatever the problem needs.」までを1行に収め、Currently〜 を2行目にする
 const [bioMain, bioNow] = PROFILE.bio.split(/\s+(?=Currently)/);
+// 英語の bio の2行と行の位置を揃えるため、日本語も「。」で2行に分ける
+const [bioJaMain, bioJaNow] = PROFILE.bioJa.split(/(?<=。)/);
 
 // contact（Email）は void には出さない
 const CATEGORY_ORDER = ['social', 'code', 'talks', 'writing', 'creds', 'design', 'self'];
@@ -12,13 +14,23 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
 ---
 
 <div class="void">
-  <header class="vd-head">
-    <h1 class="vd-name">
-      <span class="vd-prompt" aria-hidden="true">&gt;</span>
-      {PROFILE.name} ({PROFILE.handle}) — {PROFILE.title}
-    </h1>
-    <p class="vd-creds">{CREDENTIALS[0]}<br />{CREDENTIALS[1]}</p>
-    <p class="vd-bio">{bioMain}<br />{bioNow}</p>
+  <header class="vd-head vd-bilingual" id="vd-bilingual">
+    <div class="vd-layer vd-en">
+      <h1 class="vd-name">
+        <span class="vd-prompt" aria-hidden="true">&gt;</span>
+        {PROFILE.name} ({PROFILE.handle}) — {PROFILE.title}
+      </h1>
+      <p class="vd-creds">{CREDENTIALS[0]}<br />{CREDENTIALS[1]}</p>
+      <p class="vd-bio">{bioMain}<br />{bioNow}</p>
+    </div>
+    <div class="vd-layer vd-ja" lang="ja" aria-hidden="true">
+      <p class="vd-name">
+        <span class="vd-prompt">&gt;</span>
+        {PROFILE.nameJa} ({PROFILE.handle}) — {PROFILE.title}
+      </p>
+      <p class="vd-creds">{CREDENTIALS[0]}<br />{CREDENTIALS[1]}</p>
+      <p class="vd-bio">{bioJaMain}<br />{bioJaNow}</p>
+    </div>
   </header>
 
   <section aria-label="links">
@@ -66,44 +78,63 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
   document.getElementById('vd-back')?.addEventListener('click', () => {
     (window as any).vivibioShowGate?.();
   });
+
+  const bilingual = document.getElementById('vd-bilingual');
+  if (bilingual) {
+    const moveTo = (clientX: number, clientY: number) => {
+      const r = bilingual.getBoundingClientRect();
+      bilingual.style.setProperty('--mx', `${clientX - r.left}px`);
+      bilingual.style.setProperty('--my', `${clientY - r.top}px`);
+    };
+    const hide = () => {
+      bilingual.style.setProperty('--mx', '-999px');
+      bilingual.style.setProperty('--my', '-999px');
+    };
+    window.addEventListener('mousemove', (e) => moveTo(e.clientX, e.clientY), { passive: true });
+    document.documentElement.addEventListener('mouseleave', hide);
+    window.addEventListener('touchstart', (e) => moveTo(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+    window.addEventListener('touchmove', (e) => moveTo(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+    window.addEventListener('touchend', hide);
+    window.addEventListener('touchcancel', hide);
+  }
 </script>
 
 <style>
   .void {
-    max-width: 640px;
+    max-width: 720px;
     margin: 0 auto;
     padding: 72px 20px 56px;
     font-family: 'JetBrains Mono', ui-monospace, monospace;
-    font-size: 12px;
+    font-size: 14px;
     line-height: 1.9;
-    color: #9a9a9a;
+    color: var(--vd-text);
   }
   .vd-head {
     margin-bottom: 40px;
   }
   .vd-name {
     margin: 0 0 12px;
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 700;
     letter-spacing: 0.04em;
-    color: #eee;
+    color: var(--vd-strong);
   }
   .vd-prompt {
     color: var(--void-accent);
   }
   .vd-creds {
     margin: 0 0 14px;
-    color: #c2c2c2;
+    color: var(--vd-creds);
   }
   .vd-bio {
     margin: 0;
   }
   .vd-rule {
     margin: 36px 0 10px;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 400;
     letter-spacing: 0.08em;
-    color: #555;
+    color: var(--vd-dim);
     white-space: nowrap;
     overflow: hidden;
   }
@@ -118,14 +149,14 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
     gap: 0 16px;
     padding: 1px 0;
     text-decoration: none;
-    color: #9a9a9a;
+    color: var(--vd-text);
     transition: color 0.15s ease;
   }
   .vd-orow {
     grid-template-columns: 9ch 1fr;
   }
   .vd-cat {
-    color: #555;
+    color: var(--vd-dim);
     transition: color 0.15s ease;
   }
   .vd-handle,
@@ -145,16 +176,16 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #555;
-    font-size: 11px;
+    color: var(--vd-dim);
+    font-size: 13px;
   }
   .vd-back {
     margin-top: 28px;
     padding: 0;
     font-family: inherit;
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 0.08em;
-    color: #555;
+    color: var(--vd-dim);
     background: none;
     border: none;
     cursor: pointer;
@@ -170,6 +201,27 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
     border-radius: 50%;
     background: #3adb76;
     box-shadow: 0 0 6px rgba(58, 219, 118, 0.8);
+  }
+  .vd-bilingual {
+    --mx: -999px;
+    --my: -999px;
+    display: grid;
+  }
+  .vd-layer {
+    grid-area: 1 / 1;
+  }
+  .vd-en {
+    -webkit-mask-image: radial-gradient(circle at var(--mx) var(--my), transparent 80px, #000 110px);
+    mask-image: radial-gradient(circle at var(--mx) var(--my), transparent 80px, #000 110px);
+  }
+  .vd-ja {
+    pointer-events: none;
+    user-select: none;
+    -webkit-mask-image: radial-gradient(circle at var(--mx) var(--my), #000 80px, transparent 110px);
+    mask-image: radial-gradient(circle at var(--mx) var(--my), #000 80px, transparent 110px);
+  }
+  .vd-ja .vd-name {
+    margin: 0 0 12px;
   }
   @media (max-width: 520px) {
     .vd-lrow {
