@@ -23,7 +23,7 @@ export const PROFILE = {
   title: 'Software Engineer / AI Engineer',
   location: 'Tokyo, Japan',
   bio: 'I work across stacks, phases, and layers — whatever the problem needs. Currently focused on AWS and AI.',
-  bioJa: '課題解決のためなら、技術・フェーズ・レイヤーを問わず何でもやります。今は AWS と AI を中心に。',
+  bioJa: '課題解決のためなら、技術・フェーズ・レイヤーを問わず何でもやります。今はAWSとAI分野をメインに扱っています。普段はyokoの名前で活動しています。',
   currently: 'AWS / AI',
   avatarUrl: 'https://avatars.githubusercontent.com/u/45911707?v=4',
   githubId: 45911707,

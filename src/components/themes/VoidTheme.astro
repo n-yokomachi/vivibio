@@ -4,8 +4,8 @@ import VoidFx from '../VoidFx.astro';
 
 // bio は「whatever the problem needs.」までを1行に収め、Currently〜 を2行目にする
 const [bioMain, bioNow] = PROFILE.bio.split(/\s+(?=Currently)/);
-// 英語の bio の2行と行の位置を揃えるため、日本語も「。」で2行に分ける
-const [bioJaMain, bioJaNow] = PROFILE.bioJa.split(/(?<=。)/);
+// 英語の bio の行と位置を揃えるため、日本語は「。」ごとに1行にする
+const bioJaLines = PROFILE.bioJa.split(/(?<=。)/);
 
 // contact（Email）は void には出さない
 const CATEGORY_ORDER = ['social', 'code', 'talks', 'writing', 'creds', 'design', 'self'];
@@ -29,7 +29,7 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
           <span class="vd-prompt">&gt;</span>
           {PROFILE.nameJa} ({PROFILE.handle}) — ソフトウェアエンジニア / AIエンジニア
         </p>
-        <p class="vd-bio">{bioJaMain}<br />{bioJaNow}</p>
+        <p class="vd-bio">{bioJaLines.map((line, i) => (i === 0 ? line : [<br />, line]))}</p>
       </div>
       <div class="vd-ring-layer" aria-hidden="true"><span class="vd-ring"></span></div>
     </div>
