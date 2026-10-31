@@ -202,6 +202,12 @@ const themes = [
     });
   });
 
+  // テーマを切り替えたときと、入口画面を開閉したときはページの先頭に戻す
+  new MutationObserver(() => window.scrollTo({ top: 0, behavior: 'instant' })).observe(root, {
+    attributes: true,
+    attributeFilter: ['data-theme', 'data-gate'],
+  });
+
   // hashchange listener
   window.addEventListener('hashchange', () => {
     const hash = location.hash.slice(1);
