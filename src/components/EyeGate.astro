@@ -119,9 +119,12 @@
     let PADX = 14, PADY = 16, DOT = 3;
     const HOLE_MID = data.holeMid;
     const pinkColor = () =>
-      document.documentElement.dataset.scheme === 'light' ? '#8e0f5c' : 'rgb(238,96,195)';
+      document.documentElement.dataset.scheme === 'light' ? '#e8158f' : 'rgb(238,96,195)';
     const grayColor = () =>
-      document.documentElement.dataset.scheme === 'light' ? '#4a453d' : 'rgb(76,76,76)';
+      document.documentElement.dataset.scheme === 'light' ? '#2e2a24' : 'rgb(76,76,76)';
+    // ライトでは明るい背景に小さなドットが負けて薄く見えるため、ドットを1段大きく描く
+    const dotSize = () =>
+      document.documentElement.dataset.scheme === 'light' ? DOT + Math.max(1, Math.round(DOT / 3)) : DOT;
     const RX_L = -12, RX_R = 10, RY_U = -6, RY_D = 7;
     const REST_DY = -2;
 
@@ -267,16 +270,18 @@
         }
       }
       ctx.fillStyle = pinkColor();
+      const dot = dotSize();
       for (let i = 0; i < pupilList.length; i += 2) {
-        ctx.fillRect(pupilList[i], pupilList[i + 1], DOT, DOT);
+        ctx.fillRect(pupilList[i], pupilList[i + 1], dot, dot);
       }
     }
 
     function drawGray() {
       ctx.fillStyle = grayColor();
+      const dot = dotSize();
       for (let i = 0; i < master.length; i++) {
         if (!state[i]) continue;
-        ctx.fillRect(xpx(master[i][0]), ypx(master[i][1]), DOT, DOT);
+        ctx.fillRect(xpx(master[i][0]), ypx(master[i][1]), dot, dot);
       }
     }
 
