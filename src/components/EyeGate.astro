@@ -50,6 +50,12 @@
   .gate-enter:focus:not(:focus-visible) {
     outline: none;
   }
+  /* 15px だと幅 375px で折り返すため、狭い画面では元の大きさに戻す */
+  @media (max-width: 520px) {
+    .gate-enter {
+      font-size: 13px;
+    }
+  }
 </style>
 
 <script>

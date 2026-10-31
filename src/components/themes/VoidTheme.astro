@@ -142,6 +142,8 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
     color: var(--vd-dim);
     white-space: nowrap;
     overflow: hidden;
+    /* 罫線の長さがページの最小幅を押し広げないようにする（幅 375px で横にはみ出すため） */
+    contain: inline-size;
   }
   .vd-list {
     list-style: none;
