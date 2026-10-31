@@ -51,7 +51,6 @@ export const LINKS: LinkItem[] = [
   { id: 'bukulog',     label: 'ブクログ',         handle: 'yokomachi1',          url: 'https://booklog.jp/users/yokomachi1',                                                                     category: 'self'    },
   { id: 'filmarks',    label: 'Filmarks',        handle: 'yokomachi',           url: 'https://filmarks.com/users/yokomachi',                                                                    category: 'self'    },
   { id: 'discord',     label: 'Discord',         handle: 'yokomachi',           url: 'https://discordapp.com/users/750727153871618069',                                                         category: 'social'  },
-  { id: 'atcoder',     label: 'AtCoder',         handle: 'yokomachi',           url: 'https://atcoder.jp/users/yokomachi',                                                                      category: 'code'    },
   { id: 'email',       label: 'Email',           handle: 'asterism.mihono',     url: 'mailto:asterism.mihono@gmail.com',                                                                        category: 'contact' },
 ];
 
@@ -59,29 +58,29 @@ export const OUTPUTS: OutputItem[] = [
   {
     id: 'output-article',
     badge: 'ARTICLE',
-    title: 'Strands Agents SkillとAgentCore Code InterpreterでAWSコストの可視化ワークフローを作る',
+    title: 'Jevを自作感情エンジンに組み込んでLLMと性能を比べてみた',
     subtitle: 'Zenn',
-    url: 'https://zenn.dev/yokomachi/articles/202603_code-interpreter-with-strands-agents-skills',
+    url: 'https://zenn.dev/yokomachi/articles/202609_jev-affectus',
   },
   {
     id: 'output-talk',
     badge: 'TALK',
-    title: 'AI Agent Builders Meetup #2',
-    subtitle: 'Connpass',
-    url: 'https://aibuilders.connpass.com/event/385164/',
+    title: 'Tokyo | Claude Code Meetup',
+    subtitle: 'Luma',
+    url: 'https://luma.com/claude-7fyk?tk=nAq1Qj',
   },
   {
     id: 'output-repo',
     badge: 'REPO',
-    title: 'n-yokomachi/tonari — An AI agent standing with you',
+    title: 'n-yokomachi/cadenza — A Claude Code plugin for phased technical-output creation',
     subtitle: 'GitHub',
-    url: 'https://github.com/n-yokomachi/tonari',
+    url: 'https://github.com/n-yokomachi/cadenza',
   },
   {
     id: 'output-slide',
     badge: 'SLIDE',
-    title: 'Strands Agents × Amazon Bedrock AgentCoreで パーソナルAIエージェントを作ろう',
+    title: '正しさだけではプロジェクトは進まないから | Become an AI Agent Orchestration Engineer',
     subtitle: 'SpeakerDeck',
-    url: 'https://speakerdeck.com/yokomachi/building-a-personal-ai-agent-with-strands-agents-x-amazon-bedrock-agentcore-jp',
+    url: 'https://speakerdeck.com/yokomachi/become-an-ai-agent-orchestration-engineer',
   },
 ];
