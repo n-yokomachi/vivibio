@@ -477,6 +477,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
 </style>
 
 <script>
+  import { createRocket, ROCKET_DARK } from '../../scripts/fx/rocket';
   // Run only when Glitch theme is active (lazy init via observer)
   const isGlitchActive = () => document.documentElement.dataset.theme === 'glitch';
   // 非アクティブで自主停止した rAF ループをテーマ復帰時に再開するフック
@@ -645,14 +646,9 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
         const COLOR = '#ff2d8d';
         const LINK_DIST = 80;
 
-        type P = { x: number; y: number; vx: number; vy: number; r: number; ttl: number; maxTtl: number };
+        type P = { x: number; y: number; vx: number; vy: number; r: number };
         const particles: P[] = [];
-        const MAX_PARTICLES = 2000;
-        const FADE_FRAMES = 90;
-
-        type Rocket = { x: number; y: number; vx: number; active: boolean };
-        const rocket: Rocket = { x: -100, y: 0, vx: 0, active: false };
-        const ROCKET_RADIUS = 110;
+        const rocket = createRocket();
 
         function resize() {
           if (!canvas || !ctx) return;
@@ -672,293 +668,49 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
               vx: (Math.random() - 0.5) * 0.3,
               vy: (Math.random() - 0.5) * 0.3,
               r: Math.random() * 1.4 + 0.4,
-              ttl: Infinity, // base field lives forever
-              maxTtl: Infinity,
             });
           }
         }
 
-        type RocketExt = Rocket & { vy: number };
-        const rocketExt = rocket as RocketExt;
-        rocketExt.vy = 0;
-
-        function launchRocket() {
-          rocketExt.active = true;
-          // Pick a spawn edge (0=top, 1=right, 2=bottom, 3=left), 40px outside the canvas
-          const side = Math.floor(Math.random() * 4);
-          let sx = 0;
-          let sy = 0;
-          if (side === 0) { sx = Math.random() * w; sy = -50; }
-          else if (side === 1) { sx = w + 50; sy = Math.random() * h; }
-          else if (side === 2) { sx = Math.random() * w; sy = h + 50; }
-          else { sx = -50; sy = Math.random() * h; }
-          rocketExt.x = sx;
-          rocketExt.y = sy;
-          // Aim somewhere near the opposite side with random offset for variety
-          const targetX = w - sx + (Math.random() - 0.5) * w * 0.5;
-          const targetY = h - sy + (Math.random() - 0.5) * h * 0.5;
-          const dx = targetX - sx;
-          const dy = targetY - sy;
-          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          // Mobile viewports get a slower rocket so the cross-screen time feels similar
-          const isNarrow = w < 700;
-          const speed = isNarrow
-            ? 1.8 + Math.random() * 1.0   // 1.8–2.8 px/frame on mobile
-            : 2.5 + Math.random() * 1.0;  // 2.5–3.5 px/frame on desktop
-          rocketExt.vx = (dx / dist) * speed;
-          rocketExt.vy = (dy / dist) * speed;
-        }
-
-        function scheduleRocket() {
-          const delay = 7000 + Math.random() * 6000; // 7–13 s between launches
-          setTimeout(() => {
-            if (isGlitchActive() && !rocketExt.active) launchRocket();
-            scheduleRocket();
-          }, delay);
-        }
-        // Launch the first rocket right after the canvas has been measured
-        // (resize() runs after this block; without a small delay w/h are still 0
-        // and the launch direction collapses to the cardinal axes).
-        setTimeout(() => {
-          if (!rocketExt.active && w > 0 && h > 0) launchRocket();
-        }, 80);
-        scheduleRocket();
-
-        function drawRocket() {
-          if (!ctx || !rocketExt.active) return;
-          const angle = Math.atan2(rocketExt.vy, rocketExt.vx);
-          ctx.save();
-          ctx.translate(rocketExt.x, rocketExt.y);
-          ctx.rotate(angle);
-
-          // ===== Flame trail behind rocket =====
-          const FLAME_LEN = 36;
-          for (let i = 0; i < FLAME_LEN; i++) {
-            const t = i / FLAME_LEN;
-            const tx = -i * 3.2 + (Math.random() - 0.5) * 2.5;
-            const ty = (Math.random() - 0.5) * (3 + i * 0.32);
-            const tr = Math.max(0.4, 5.5 - i * 0.13);
-            const opacity = Math.max(0, 0.95 - t * 0.92);
-            ctx.fillStyle =
-              i < 3 ? '#fff' : i < 9 ? '#ffd200' : i < 18 ? '#ff5733' : '#ff2d8d';
-            ctx.globalAlpha = opacity;
-            ctx.beginPath();
-            ctx.arc(tx, ty, tr, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          // Bright nozzle core
-          for (let i = 0; i < 8; i++) {
-            const tx = -2 + (Math.random() - 0.5) * 4;
-            const ty = (Math.random() - 0.5) * 6;
-            ctx.fillStyle = '#fff';
-            ctx.globalAlpha = 0.6 + Math.random() * 0.4;
-            ctx.beginPath();
-            ctx.arc(tx, ty, 1.5 + Math.random() * 2, 0, Math.PI * 2);
-            ctx.fill();
-          }
-
-          // ===== Rocket body =====
-          ctx.globalAlpha = 1;
-          // Aft fins (drawn first so body covers the inside edge)
-          ctx.fillStyle = '#ff2d8d';
-          // Top fin
-          ctx.beginPath();
-          ctx.moveTo(0, -3);
-          ctx.lineTo(-6, -7);
-          ctx.lineTo(4, -3);
-          ctx.closePath();
-          ctx.fill();
-          // Bottom fin
-          ctx.beginPath();
-          ctx.moveTo(0, 3);
-          ctx.lineTo(-6, 7);
-          ctx.lineTo(4, 3);
-          ctx.closePath();
-          ctx.fill();
-          // Main body — capsule with cyan top, white belly
-          ctx.fillStyle = '#16f0ff';
-          ctx.fillRect(0, -3, 16, 6);
-          // Belly stripe
-          ctx.fillStyle = 'rgba(255,255,255,0.65)';
-          ctx.fillRect(0, 1, 16, 2);
-          // Nose cone
-          ctx.fillStyle = '#fff';
-          ctx.beginPath();
-          ctx.moveTo(16, -3);
-          ctx.lineTo(24, 0);
-          ctx.lineTo(16, 3);
-          ctx.closePath();
-          ctx.fill();
-          // Window/port
-          ctx.fillStyle = '#ffd200';
-          ctx.beginPath();
-          ctx.arc(11, -0.5, 1.6, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#07010d';
-          ctx.beginPath();
-          ctx.arc(11, -0.5, 0.7, 0, Math.PI * 2);
-          ctx.fill();
-          // Body band detail
-          ctx.fillStyle = 'rgba(7,1,13,0.5)';
-          ctx.fillRect(5, -3, 1, 6);
-
-          ctx.restore();
-
-          // ===== Spawn persistent exhaust particles into the main field =====
-          // Spawn in a V-cone behind the rocket: further back = wider lateral spread.
-          // Continuous spawn throughout flight — when at cap, evict the oldest
-          // exhaust particle (FIFO) so the rocket keeps emitting until off-screen.
-          {
-            const speed = Math.sqrt(rocketExt.vx * rocketExt.vx + rocketExt.vy * rocketExt.vy) || 1;
-            const ux = rocketExt.vx / speed;
-            const uy = rocketExt.vy / speed;
-            const perpX = -uy;
-            const perpY = ux;
-            for (let n = 0; n < 2; n++) {
-              // Make room if we're at the cap by evicting the particle closest to
-              // natural expiry (lowest remaining TTL) rather than the oldest one,
-              // so freshly-spawned exhaust isn't sacrificed prematurely.
-              if (particles.length >= MAX_PARTICLES) {
-                let minTtl = Infinity;
-                let minIdx = -1;
-                for (let i = 0; i < particles.length; i++) {
-                  const ttl = particles[i].ttl;
-                  if (ttl !== Infinity && ttl < minTtl) {
-                    minTtl = ttl;
-                    minIdx = i;
-                  }
-                }
-                if (minIdx >= 0) {
-                  particles.splice(minIdx, 1);
-                } else {
-                  break; // only base field present — bail
-                }
-              }
-              const back = 24 + Math.random() * 90;        // 24–114 px behind nozzle
-              const halfWidth = back * 0.22;               // V-cone half-width (~12°)
-              const side = (Math.random() - 0.5) * 2 * halfWidth;
-              const radialSign = side >= 0 ? 1 : -1;
-              const radial = 0.35 + Math.random() * 0.6;   // continued outward drift
-              const fwd = -0.25 - Math.random() * 0.35;    // slight backward drift in rocket frame
-              const px = rocketExt.x - ux * back + perpX * side;
-              const py = rocketExt.y - uy * back + perpY * side;
-              // Skip spawns that land too far off-canvas — they'd be invisible
-              if (px < -40 || px > w + 40 || py < -40 || py > h + 40) continue;
-              const maxTtl = 1080 + Math.floor(Math.random() * 600); // 18–28 s @60fps
-              particles.push({
-                x: px,
-                y: py,
-                vx: ux * fwd + perpX * radial * radialSign,
-                vy: uy * fwd + perpY * radial * radialSign,
-                r: Math.random() * 1.4 + 0.4,
-                ttl: maxTtl,
-                maxTtl,
-              });
-            }
-          }
-        }
+        // 計測が済んでから最初のロケットを飛ばす
+        rocket.armLaunch(performance.now(), 80);
 
         let raf = 0;
-        function tick() {
+        function tick(now: number) {
           if (!isGlitchActive()) return;
           if (!ctx) return;
           ctx.clearRect(0, 0, w, h);
 
-          // Advance rocket
-          if (rocketExt.active) {
-            rocketExt.x += rocketExt.vx;
-            rocketExt.y += rocketExt.vy;
-            if (
-              rocketExt.x < -100 ||
-              rocketExt.x > w + 100 ||
-              rocketExt.y < -100 ||
-              rocketExt.y > h + 100
-            ) {
-              rocketExt.active = false;
-            }
-          }
+          rocket.update(w, h, now);
 
-          // Update particles (reverse loop so we can splice expired ones)
-          for (let i = particles.length - 1; i >= 0; i--) {
-            const p = particles[i];
-            // TTL countdown for finite-life particles (rocket exhaust)
-            if (p.ttl !== Infinity) {
-              p.ttl--;
-              if (p.ttl <= 0) {
-                particles.splice(i, 1);
-                continue;
-              }
-            }
-            // Rocket dispersion: push particles radially away from the rocket
-            if (rocketExt.active) {
-              const dx = p.x - rocketExt.x;
-              const dy = p.y - rocketExt.y;
-              const d2 = dx * dx + dy * dy;
-              if (d2 < ROCKET_RADIUS * ROCKET_RADIUS && d2 > 1) {
-                const d = Math.sqrt(d2);
-                const force = 1.6 * (1 - d / ROCKET_RADIUS);
-                p.vx += (dx / d) * force;
-                p.vy += (dy / d) * force;
-              }
-            }
-            // Soft damping so dispersed particles eventually settle
+          for (const p of particles) {
+            rocket.repel(p);
             p.vx *= 0.992;
             p.vy *= 0.992;
-            // Tiny brownian impulse keeps the field alive at rest
             p.vx += (Math.random() - 0.5) * 0.02;
             p.vy += (Math.random() - 0.5) * 0.02;
-            // Velocity clamp to avoid runaway speeds
             const v = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-            const MAX_V = 4;
-            if (v > MAX_V) {
-              p.vx = (p.vx / v) * MAX_V;
-              p.vy = (p.vy / v) * MAX_V;
+            if (v > 4) {
+              p.vx = (p.vx / v) * 4;
+              p.vy = (p.vy / v) * 4;
             }
-            // Integrate
             p.x += p.vx;
             p.y += p.vy;
-            if (p.ttl === Infinity) {
-              // Base field wraps toroidally so it always covers the canvas
-              if (p.x < 0) p.x += w;
-              if (p.x > w) p.x -= w;
-              if (p.y < 0) p.y += h;
-              if (p.y > h) p.y -= h;
-            } else {
-              // Exhaust particles fly off naturally — kill once well off-screen
-              if (p.x < -120 || p.x > w + 120 || p.y < -120 || p.y > h + 120) {
-                p.ttl = 0;
-              }
-            }
-            // Render: exhaust particles cool from magenta to cyan as they age,
-            // and fade out in the final FADE_FRAMES of their TTL.
-            let alpha = 0.7;
-            let cr = 255, cg = 45, cb = 141; // magenta baseline
-            if (p.ttl !== Infinity) {
-              const age = 1 - p.ttl / p.maxTtl;
-              if (age > 0.15) {
-                const t = Math.min(1, (age - 0.15) / 0.45);
-                const eased = t * t * (3 - 2 * t); // smoothstep
-                cr = Math.round(255 + (22 - 255) * eased);
-                cg = Math.round(45 + (240 - 45) * eased);
-                cb = Math.round(141 + (255 - 141) * eased);
-              }
-              if (p.ttl < FADE_FRAMES) alpha *= p.ttl / FADE_FRAMES;
-            }
-            ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
-            ctx.globalAlpha = alpha;
+            if (p.x < 0) p.x += w;
+            if (p.x > w) p.x -= w;
+            if (p.y < 0) p.y += h;
+            if (p.y > h) p.y -= h;
+            ctx.fillStyle = COLOR;
+            ctx.globalAlpha = 0.7;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
             ctx.fill();
           }
 
-          // Linking lines — only between base-field particles, so exhaust dots
-          // don't form a noisy mesh during/after rocket bursts.
           ctx.strokeStyle = COLOR;
           ctx.lineWidth = 0.5;
           for (let i = 0; i < particles.length; i++) {
-            if (particles[i].ttl !== Infinity) continue;
             for (let j = i + 1; j < particles.length; j++) {
-              if (particles[j].ttl !== Infinity) continue;
               const dx = particles[i].x - particles[j].x;
               const dy = particles[i].y - particles[j].y;
               const d2 = dx * dx + dy * dy;
@@ -972,7 +724,7 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
             }
           }
 
-          drawRocket();
+          rocket.draw(ctx, ROCKET_DARK);
 
           raf = requestAnimationFrame(tick);
         }
@@ -980,15 +732,14 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
         resize();
         spawn();
         let lastW = w;
-        tick();
+        raf = requestAnimationFrame(tick);
         glitchResume.push(() => {
           cancelAnimationFrame(raf);
           raf = requestAnimationFrame(tick);
         });
 
         // Mobile では URL バー折りたたみで viewport 高さだけ変わって再発火するため、
-        // 幅が大きく変わったとき (オリエンテーション変更/ウィンドウリサイズ) だけ
-        // 粒子を再生成する。高さ変化だけのときは canvas dims のみ更新して粒子は維持。
+        // 幅が大きく変わったときだけ粒子を再生成する。
         const ro = new ResizeObserver(() => {
           resize();
           if (Math.abs(w - lastW) > 60) {
@@ -998,12 +749,11 @@ const stripeColors = ['#ff2d8d', '#16f0ff', '#ffd200', '#00ff88', '#ff3b3b', '#f
         });
         ro.observe(canvas);
 
-        // Pause animation when tab is hidden to save CPU
         document.addEventListener('visibilitychange', () => {
           if (document.hidden) {
             cancelAnimationFrame(raf);
           } else if (isGlitchActive()) {
-            tick();
+            raf = requestAnimationFrame(tick);
           }
         });
       }
