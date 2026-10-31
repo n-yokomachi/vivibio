@@ -112,7 +112,7 @@ const websiteJsonLd = JSON.stringify({
         root.dataset.scheme = scheme;
         root.dataset.gate = 'open';
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', scheme === 'light' ? '#fafafa' : '#000000');
+        if (meta) meta.setAttribute('content', scheme === 'light' ? '#ebe5d8' : '#000000');
       })();
     </script>
     <noscript>
@@ -156,12 +156,12 @@ const websiteJsonLd = JSON.stringify({
         --void-accent: #ff4d9e;
       }
       :root[data-scheme='light'] {
-        --vd-bg: #fafafa;
+        --vd-bg: #ebe5d8;
         --vd-text: #555;
-        --vd-dim: #aaa;
+        --vd-dim: #968d7f;
         --vd-strong: #111;
         --vd-creds: #444;
-        --vd-muted: #888;
+        --vd-muted: #7d7568;
         --void-accent: #c8409f;
       }
       /* Fallback before data-theme attribute is set (no-JS / pre-script paint).

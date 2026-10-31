@@ -118,9 +118,10 @@
     let CW = 14, CH = 30, SUBX = [0, 5], SUBY = [0, 6, 11, 17];
     let PADX = 14, PADY = 16, DOT = 3;
     const HOLE_MID = data.holeMid;
-    const PINK = 'rgb(238,96,195)';
+    const pinkColor = () =>
+      document.documentElement.dataset.scheme === 'light' ? '#b8237f' : 'rgb(238,96,195)';
     const grayColor = () =>
-      document.documentElement.dataset.scheme === 'light' ? '#c8c8c8' : 'rgb(76,76,76)';
+      document.documentElement.dataset.scheme === 'light' ? '#8a847a' : 'rgb(76,76,76)';
     const RX_L = -12, RX_R = 10, RY_U = -6, RY_D = 7;
     const REST_DY = -2;
 
@@ -265,7 +266,7 @@
           pupilList.push(xpx(ax), ypx(ay));
         }
       }
-      ctx.fillStyle = PINK;
+      ctx.fillStyle = pinkColor();
       for (let i = 0; i < pupilList.length; i += 2) {
         ctx.fillRect(pupilList[i], pupilList[i + 1], DOT, DOT);
       }

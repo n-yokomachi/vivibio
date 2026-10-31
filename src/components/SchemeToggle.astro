@@ -44,7 +44,7 @@
 
   function apply(scheme: Scheme) {
     root.dataset.scheme = scheme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', scheme === 'light' ? '#fafafa' : '#000000');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', scheme === 'light' ? '#ebe5d8' : '#000000');
     if (btn) btn.textContent = scheme === 'light' ? '[ dark ]' : '[ light ]';
     window.dispatchEvent(new CustomEvent('vivibio:scheme', { detail: scheme }));
   }
