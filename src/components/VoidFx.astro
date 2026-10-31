@@ -5,13 +5,17 @@
 <canvas class="vd-fx-canvas" id="vd-fx-canvas" aria-hidden="true"></canvas>
 
 <style>
+  /* 右上の配色の切り替え [ light ] の下に縦に並べる */
   .vd-fx {
-    margin-top: 28px;
+    position: fixed;
+    top: 44px;
+    right: 16px;
     display: flex;
-    gap: 20px;
+    flex-direction: column;
+    align-items: flex-end;
   }
   .vd-fx-btn {
-    padding: 0;
+    padding: 4px 8px;
     font-family: inherit;
     font-size: 13px;
     letter-spacing: 0.08em;
@@ -136,7 +140,7 @@
 
     // 粒子がオンのとき、リンクにカーソルを乗せるとリンク名の文字に集める
     document.querySelectorAll<HTMLElement>('.vd-lrow').forEach((el) => {
-      const label = el.querySelector<HTMLElement>('.vd-label')?.textContent?.trim() ?? '';
+      const label = el.querySelector<HTMLElement>('.vd-label')?.dataset.swarm ?? '';
       if (!label) return;
       const gather = () => { if (particlesOn) field.swarmTo(label); };
       const release = () => { if (particlesOn) field.scatter(); };

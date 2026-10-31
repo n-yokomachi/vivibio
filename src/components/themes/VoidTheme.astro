@@ -27,11 +27,12 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
     <div class="vd-layer vd-ja" lang="ja" aria-hidden="true">
       <p class="vd-name">
         <span class="vd-prompt">&gt;</span>
-        {PROFILE.nameJa} ({PROFILE.handle}) — {PROFILE.title}
+        {PROFILE.nameJa} ({PROFILE.handle}) — ソフトウェアエンジニア / AIエンジニア
       </p>
       <p class="vd-creds">{CREDENTIALS[0]}<br />{CREDENTIALS[1]}</p>
       <p class="vd-bio">{bioJaMain}<br />{bioJaNow}</p>
     </div>
+    <div class="vd-ring-layer" aria-hidden="true"><span class="vd-ring"></span></div>
   </header>
 
   <section aria-label="links">
@@ -42,7 +43,7 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
           <li>
             <a class="vd-row vd-lrow" href={l.url} target="_blank" rel="noopener noreferrer">
               <span class="vd-cat">{l.category}</span>
-              <span class="vd-label">{l.label}</span>
+              <span class="vd-label" data-swarm={l.swarmLabel ?? l.label}>{l.label}</span>
               <span class="vd-handle">{l.handle}</span>
             </a>
           </li>
@@ -99,6 +100,28 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
     window.addEventListener('touchmove', (e) => moveTo(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
     window.addEventListener('touchend', hide);
     window.addEventListener('touchcancel', hide);
+
+    // 枠線を名前の行と bio の文字の行の範囲だけに切り抜く
+    const ringLayer = bilingual.querySelector<HTMLElement>('.vd-ring-layer');
+    const ringTargets = bilingual.querySelectorAll<HTMLElement>('.vd-name, .vd-bio');
+    const updateRingClip = () => {
+      if (!ringLayer) return;
+      const b = bilingual.getBoundingClientRect();
+      const range = document.createRange();
+      let d = '';
+      ringTargets.forEach((el) => {
+        range.selectNodeContents(el);
+        for (const q of range.getClientRects()) {
+          if (q.width < 1) continue;
+          const x = q.left - b.left - 2;
+          const y = q.top - b.top - 2;
+          d += `M${x} ${y}h${q.width + 4}v${q.height + 4}h${-(q.width + 4)}Z`;
+        }
+      });
+      ringLayer.style.clipPath = d ? `path('${d}')` : 'inset(100%)';
+    };
+    new ResizeObserver(updateRingClip).observe(bilingual);
+    document.fonts?.ready.then(updateRingClip);
   }
 </script>
 
@@ -172,6 +195,15 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  /* リンク行の当たり判定は文字だけにする。行の空白は押せない */
+  .vd-lrow {
+    pointer-events: none;
+  }
+  .vd-lrow > span {
+    justify-self: start;
+    max-width: 100%;
+    pointer-events: auto;
+  }
   .vd-row:hover,
   .vd-row:focus-visible,
   .vd-row:hover .vd-cat,
@@ -217,6 +249,23 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
   .vd-layer {
     grid-area: 1 / 1;
   }
+  /* 円の枠線。clip-path で名前の行と bio の文字の範囲だけに出す（JS で計算する） */
+  .vd-ring-layer {
+    grid-area: 1 / 1;
+    position: relative;
+    pointer-events: none;
+    clip-path: inset(100%);
+  }
+  .vd-ring {
+    position: absolute;
+    left: calc(var(--mx) - 95px);
+    top: calc(var(--my) - 95px);
+    width: 190px;
+    height: 190px;
+    border: 1px solid var(--void-accent);
+    border-radius: 50%;
+    opacity: 0.6;
+  }
   .vd-en {
     -webkit-mask-image: radial-gradient(circle at var(--mx) var(--my), transparent 80px, #000 110px);
     mask-image: radial-gradient(circle at var(--mx) var(--my), transparent 80px, #000 110px);
@@ -229,6 +278,12 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
   }
   .vd-ja .vd-name {
     margin: 0 0 12px;
+  }
+  /* 右上のボタン（配色と背景演出）が本文の列に重なる幅では、本文をボタンの下から始める */
+  @media (max-width: 1100px) {
+    .void {
+      padding-top: 120px;
+    }
   }
   @media (max-width: 520px) {
     .vd-lrow {
