@@ -55,42 +55,60 @@ const themes = [
       </button>
     ))
   }
+  <button class="ts-toggle" type="button" aria-label="open theme list">[ themes ]</button>
 </aside>
 
 <style>
   .ts {
     position: fixed;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    right: 16px;
+    bottom: 16px;
     z-index: 100;
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
     gap: 4px;
+  }
+
+  .ts-toggle {
+    order: 99;
+    padding: 4px 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: #444;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  :root[data-theme='minimal'] .ts-toggle,
+  :root[data-theme='concrete'] .ts-toggle,
+  :root[data-theme='void'][data-scheme='light'] .ts-toggle {
+    color: #aaa;
   }
 
   .ts-btn {
     display: flex;
     align-items: center;
-    gap: 12px;
-    width: 160px;
-    padding: 12px 14px;
+    gap: 10px;
+    width: 150px;
+    padding: 8px 12px;
     background: rgba(20, 20, 28, 0.85);
     color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.15);
-    border-right: 0;
-    border-radius: 12px 0 0 12px;
+    border-radius: 10px;
     backdrop-filter: blur(20px) saturate(140%);
     -webkit-backdrop-filter: blur(20px) saturate(140%);
-    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.3);
     cursor: pointer;
-    transform: translateX(calc(100% - 48px));
-    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), border-color 0.18s ease;
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 11px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     text-align: left;
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease, border-color 0.18s ease;
   }
 
   .ts-btn:hover {
@@ -111,51 +129,34 @@ const themes = [
     flex: 1;
   }
 
-  /* Active theme highlight */
   .ts-btn[aria-current='true'] {
     border-color: #ff5733;
   }
   :root[data-theme='void'] .ts-btn[aria-current='true'] {
     border-color: #ff4d9e;
-    box-shadow: -4px 0 16px rgba(255, 77, 158, 0.25);
   }
   :root[data-theme='glitch'] .ts-btn[aria-current='true'] {
     border-color: #ff2d8d;
-    box-shadow: -4px 0 16px rgba(255, 45, 141, 0.25);
   }
   :root[data-theme='particle'] .ts-btn[aria-current='true'] {
     border-color: #7ec8ff;
-    box-shadow: -4px 0 16px rgba(126, 200, 255, 0.25);
   }
   :root[data-theme='concrete'] .ts-btn[aria-current='true'] {
     border-color: #d4cab2;
-    box-shadow: -4px 0 16px rgba(212, 202, 178, 0.25);
   }
 
-  /* Hover: slide whole stack out (desktop) */
   @media (hover: hover) {
     .ts:hover .ts-btn {
-      transform: translateX(0);
-    }
-  }
-
-  /* Mobile / explicit open */
-  .ts[data-open='true'] .ts-btn {
-    transform: translateX(0);
-  }
-
-  /* タッチ端末では、縮小時に親 .ts の透明領域がコンテンツのタップを奪わないように
-     pointer-events を仕分ける。展開時は閉じる挙動のために auto に戻す。 */
-  @media (hover: none) {
-    .ts {
-      pointer-events: none;
-    }
-    .ts[data-open='true'] {
+      opacity: 1;
+      transform: translateY(0);
       pointer-events: auto;
     }
-    .ts-btn {
-      pointer-events: auto;
-    }
+  }
+  .ts[data-open='true'] .ts-btn,
+  .ts:focus-within .ts-btn {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
   }
 </style>
 
@@ -206,16 +207,12 @@ const themes = [
     if (isAllowed(hash)) applyTheme(hash);
   });
 
-  // Mobile: tap-anywhere on the switcher toggles open/closed
-  if (ts) {
-    ts.addEventListener('click', (e) => {
-      if (window.matchMedia('(hover: hover)').matches) return; // desktop uses hover
-      const target = e.target as HTMLElement;
-      // If user tapped on a button, the click handler above runs; here we only handle non-button area
-      if (target.closest('.ts-btn')) return;
-      ts.dataset.open = ts.dataset.open === 'true' ? 'false' : 'true';
-    });
-  }
+  // [ themes ] のボタンで一覧を開閉する（デスクトップはホバーでも開く）
+  const toggle = document.querySelector<HTMLButtonElement>('.ts-toggle');
+  toggle?.addEventListener('click', () => {
+    if (!ts) return;
+    ts.dataset.open = ts.dataset.open === 'true' ? 'false' : 'true';
+  });
 
   // Close menu on outside tap (mobile) and on ESC
   document.addEventListener('click', (e) => {
