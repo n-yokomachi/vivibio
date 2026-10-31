@@ -49,7 +49,19 @@
 
 <script>
   import { createRocket, ROCKET_DARK, ROCKET_LIGHT, ROCKET_RADIUS } from '../scripts/fx/rocket';
-  import { createParticleField, FIELD_DARK, FIELD_LIGHT } from '../scripts/fx/particle-field';
+  import { createParticleField, type FieldColors, type RGB } from '../scripts/fx/particle-field';
+
+  // void の粒子は入口の瞳と同じピンクで描く
+  const pinkField = (c: RGB): FieldColors => ({
+    star: c,
+    starLink: c,
+    palette: [c, c, c, c, c, c],
+    particleLink: c,
+    swarmHalo: c,
+    swarmCore: c,
+  });
+  const FIELD_DARK = pinkField([238, 96, 195]);
+  const FIELD_LIGHT = pinkField([184, 35, 127]);
 
   const root = document.documentElement;
   const canvas = document.getElementById('vd-fx-canvas') as HTMLCanvasElement | null;
