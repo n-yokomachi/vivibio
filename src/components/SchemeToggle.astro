@@ -1,0 +1,77 @@
+<button class="scheme-toggle" id="scheme-toggle" type="button" aria-label="switch color scheme">[ light ]</button>
+
+<style>
+  .scheme-toggle {
+    display: none;
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 310;
+    padding: 4px 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--vd-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  :global(:root[data-gate='open']) .scheme-toggle,
+  :global(:root[data-theme='void']) .scheme-toggle {
+    display: block;
+  }
+  .scheme-toggle:hover,
+  .scheme-toggle:focus-visible {
+    color: var(--void-accent);
+  }
+  .scheme-toggle:focus-visible {
+    outline: 1px solid var(--void-accent);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  type Scheme = 'light' | 'dark';
+  const KEY = 'vivibio-scheme';
+  const root = document.documentElement;
+  const btn = document.getElementById('scheme-toggle') as HTMLButtonElement | null;
+  const media = window.matchMedia('(prefers-color-scheme: light)');
+
+  function current(): Scheme {
+    return root.dataset.scheme === 'light' ? 'light' : 'dark';
+  }
+
+  function apply(scheme: Scheme) {
+    root.dataset.scheme = scheme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', scheme === 'light' ? '#fafafa' : '#000000');
+    if (btn) btn.textContent = scheme === 'light' ? '[ dark ]' : '[ light ]';
+    window.dispatchEvent(new CustomEvent('vivibio:scheme', { detail: scheme }));
+  }
+
+  function stored(): Scheme | null {
+    try {
+      const v = localStorage.getItem(KEY);
+      return v === 'light' || v === 'dark' ? v : null;
+    } catch {
+      return null;
+    }
+  }
+
+  apply(current());
+
+  btn?.addEventListener('click', () => {
+    const next: Scheme = current() === 'light' ? 'dark' : 'light';
+    try {
+      localStorage.setItem(KEY, next);
+    } catch {
+      /* 保存できない環境では切り替えだけ行う */
+    }
+    apply(next);
+  });
+
+  // 保存した値がない人だけ OS の設定の変更に追従する
+  media.addEventListener('change', (e) => {
+    if (stored() === null) apply(e.matches ? 'light' : 'dark');
+  });
+</script>

@@ -94,13 +94,25 @@ const websiteJsonLd = JSON.stringify({
 
     <script is:inline>
       (function () {
+        var root = document.documentElement;
         try {
           var hash = location.hash.slice(1);
           var allowed = ['void', 'minimal', 'glitch', 'particle', 'concrete'];
-          document.documentElement.dataset.theme = allowed.indexOf(hash) >= 0 ? hash : 'void';
+          root.dataset.theme = allowed.indexOf(hash) >= 0 ? hash : 'void';
         } catch (e) {
-          document.documentElement.dataset.theme = 'void';
+          root.dataset.theme = 'void';
         }
+        var scheme = null;
+        try {
+          scheme = localStorage.getItem('vivibio-scheme');
+        } catch (e) {}
+        if (scheme !== 'light' && scheme !== 'dark') {
+          scheme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+        root.dataset.scheme = scheme;
+        root.dataset.gate = 'open';
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', scheme === 'light' ? '#fafafa' : '#000000');
       })();
     </script>
     <noscript>
@@ -135,7 +147,22 @@ const websiteJsonLd = JSON.stringify({
       }
 
       :root {
+        --vd-bg: #000;
+        --vd-text: #9a9a9a;
+        --vd-dim: #555;
+        --vd-strong: #eee;
+        --vd-creds: #c2c2c2;
+        --vd-muted: #777;
         --void-accent: #ff4d9e;
+      }
+      :root[data-scheme='light'] {
+        --vd-bg: #fafafa;
+        --vd-text: #555;
+        --vd-dim: #aaa;
+        --vd-strong: #111;
+        --vd-creds: #444;
+        --vd-muted: #888;
+        --void-accent: #c8409f;
       }
       /* Fallback before data-theme attribute is set (no-JS / pre-script paint).
          The entry gate paints black first, so the fallback is dark. */
@@ -145,8 +172,8 @@ const websiteJsonLd = JSON.stringify({
         font-family: 'JetBrains Mono', ui-monospace, monospace;
       }
       :root[data-theme='void'] body {
-        background: #000;
-        color: #9a9a9a;
+        background: var(--vd-bg);
+        color: var(--vd-text);
         font-family: 'JetBrains Mono', ui-monospace, monospace;
       }
 

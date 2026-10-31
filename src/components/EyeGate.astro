@@ -14,7 +14,7 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    background: #000;
+    background: var(--vd-bg);
     transition: opacity 0.5s ease;
   }
   .gate.leaving {
@@ -30,9 +30,9 @@
   .gate-enter {
     margin-top: 36px;
     font-family: 'JetBrains Mono', ui-monospace, monospace;
-    font-size: 13px;
+    font-size: 15px;
     letter-spacing: 0.18em;
-    color: #777;
+    color: var(--vd-muted);
     background: none;
     border: none;
     padding: 8px 20px;
@@ -73,6 +73,7 @@
   function leave() {
     if (left) return;
     left = true;
+    document.documentElement.dataset.gate = 'closed';
     cancelAnimationFrame(rafId);
     document.body.style.overflow = prevOverflow;
     if (reduced) {
@@ -91,6 +92,7 @@
   window.vivibioShowGate = () => {
     if (!left) return;
     left = false;
+    document.documentElement.dataset.gate = 'open';
     document.body.style.overflow = 'hidden';
     gate.classList.remove('gone');
     gate.classList.remove('leaving');
@@ -111,7 +113,8 @@
     let PADX = 14, PADY = 16, DOT = 3;
     const HOLE_MID = data.holeMid;
     const PINK = 'rgb(238,96,195)';
-    const GRAY = 'rgb(76,76,76)';
+    const grayColor = () =>
+      document.documentElement.dataset.scheme === 'light' ? '#c8c8c8' : 'rgb(76,76,76)';
     const RX_L = -12, RX_R = 10, RY_U = -6, RY_D = 7;
     const REST_DY = -2;
 
@@ -263,7 +266,7 @@
     }
 
     function drawGray() {
-      ctx.fillStyle = GRAY;
+      ctx.fillStyle = grayColor();
       for (let i = 0; i < master.length; i++) {
         if (!state[i]) continue;
         ctx.fillRect(xpx(master[i][0]), ypx(master[i][1]), DOT, DOT);
@@ -300,9 +303,13 @@
       const r = canvas.getBoundingClientRect();
       cx = (r.left + r.right) / 2 / window.innerWidth;
       cy = (r.top + r.bottom) / 2 / window.innerHeight;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawPupil(0);
-      drawGray();
+      const drawStatic = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawPupil(0);
+        drawGray();
+      };
+      drawStatic();
+      window.addEventListener('vivibio:scheme', drawStatic);
       return;
     }
     window.addEventListener('pointermove', onPoint, { passive: true });
