@@ -1,5 +1,6 @@
 ---
 import { PROFILE, LINKS, OUTPUTS, CREDENTIALS } from '../../data/profile';
+import VoidFx from '../VoidFx.astro';
 
 // bio は「whatever the problem needs.」までを1行に収め、Currently〜 を2行目にする
 const [bioMain, bioNow] = PROFILE.bio.split(/\s+(?=Currently)/);
@@ -71,6 +72,8 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
     <span>tokyo, japan</span>
   </footer>
 
+  <VoidFx />
+
   <button class="vd-back" id="vd-back" type="button">[ back to the front page ]</button>
 </div>
 
@@ -101,6 +104,8 @@ const sortedLinks = LINKS.filter((l) => CATEGORY_ORDER.includes(l.category)).sor
 
 <style>
   .void {
+    position: relative;
+    z-index: 1;
     max-width: 720px;
     margin: 0 auto;
     padding: 72px 20px 56px;

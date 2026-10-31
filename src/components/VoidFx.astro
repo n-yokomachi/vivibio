@@ -1,0 +1,170 @@
+<div class="vd-fx">
+  <button class="vd-fx-btn" id="vd-fx-rocket" type="button" aria-pressed="false">[ rocket: off ]</button>
+  <button class="vd-fx-btn" id="vd-fx-particles" type="button" aria-pressed="false">[ particles: off ]</button>
+</div>
+<canvas class="vd-fx-canvas" id="vd-fx-canvas" aria-hidden="true"></canvas>
+
+<style>
+  .vd-fx {
+    margin-top: 28px;
+    display: flex;
+    gap: 20px;
+  }
+  .vd-fx-btn {
+    padding: 0;
+    font-family: inherit;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--vd-dim);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .vd-fx-btn:hover,
+  .vd-fx-btn:focus-visible,
+  .vd-fx-btn[aria-pressed='true'] {
+    color: var(--void-accent);
+  }
+  .vd-fx-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.55;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vd-fx,
+    .vd-fx-canvas {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { createRocket, ROCKET_DARK, ROCKET_LIGHT, ROCKET_RADIUS } from '../scripts/fx/rocket';
+  import { createParticleField, FIELD_DARK, FIELD_LIGHT } from '../scripts/fx/particle-field';
+
+  const root = document.documentElement;
+  const canvas = document.getElementById('vd-fx-canvas') as HTMLCanvasElement | null;
+  const rocketBtn = document.getElementById('vd-fx-rocket') as HTMLButtonElement | null;
+  const particlesBtn = document.getElementById('vd-fx-particles') as HTMLButtonElement | null;
+  const ctx = canvas?.getContext('2d') ?? null;
+
+  if (canvas && ctx && rocketBtn && particlesBtn) {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const rocket = createRocket();
+    const field = createParticleField();
+    let rocketOn = false;
+    let particlesOn = false;
+    let raf = 0;
+    let w = 0;
+    let h = 0;
+
+    const isLight = () => root.dataset.scheme === 'light';
+    const canRun = () =>
+      root.dataset.theme === 'void' && root.dataset.gate === 'closed' && (rocketOn || particlesOn) && !document.hidden;
+
+    function resize() {
+      if (!canvas || !ctx) return;
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      field.resize(w, h);
+    }
+
+    function tick(now: number) {
+      if (!ctx || !canRun()) {
+        raf = 0;
+        return;
+      }
+      ctx.clearRect(0, 0, w, h);
+      if (rocketOn) rocket.update(w, h, now);
+      if (particlesOn) {
+        if (rocketOn && rocket.active) field.repel(rocket.x, rocket.y, ROCKET_RADIUS);
+        field.update();
+        field.draw(ctx, isLight() ? FIELD_LIGHT : FIELD_DARK);
+      }
+      if (rocketOn) rocket.draw(ctx, isLight() ? ROCKET_LIGHT : ROCKET_DARK);
+      raf = requestAnimationFrame(tick);
+    }
+
+    function start() {
+      if (raf || !canRun()) return;
+      resize();
+      raf = requestAnimationFrame(tick);
+    }
+
+    function stopAll() {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      rocketOn = false;
+      particlesOn = false;
+      rocket.reset();
+      field.clearSwarm();
+      ctx?.clearRect(0, 0, w, h);
+      render();
+    }
+
+    function render() {
+      rocketBtn!.textContent = `[ rocket: ${rocketOn ? 'on' : 'off'} ]`;
+      rocketBtn!.setAttribute('aria-pressed', String(rocketOn));
+      particlesBtn!.textContent = `[ particles: ${particlesOn ? 'on' : 'off'} ]`;
+      particlesBtn!.setAttribute('aria-pressed', String(particlesOn));
+    }
+
+    rocketBtn.addEventListener('click', () => {
+      rocketOn = !rocketOn;
+      if (rocketOn) rocket.armLaunch(performance.now(), 0);
+      else rocket.reset();
+      render();
+      if (!rocketOn && !particlesOn) stopAll();
+      else start();
+    });
+
+    particlesBtn.addEventListener('click', () => {
+      particlesOn = !particlesOn;
+      if (!particlesOn) field.clearSwarm();
+      render();
+      if (!rocketOn && !particlesOn) stopAll();
+      else start();
+    });
+
+    // 粒子がオンのとき、リンクにカーソルを乗せるとリンク名の文字に集める
+    document.querySelectorAll<HTMLElement>('.vd-lrow').forEach((el) => {
+      const label = el.querySelector<HTMLElement>('.vd-label')?.textContent?.trim() ?? '';
+      if (!label) return;
+      const gather = () => { if (particlesOn) field.swarmTo(label); };
+      const release = () => { if (particlesOn) field.scatter(); };
+      el.addEventListener('mouseenter', gather);
+      el.addEventListener('mouseleave', release);
+      el.addEventListener('touchstart', gather, { passive: true });
+      el.addEventListener('touchend', release, { passive: true });
+      el.addEventListener('touchcancel', release, { passive: true });
+    });
+
+    window.addEventListener('pointermove', (e) => field.setPointer(e.clientX, e.clientY), { passive: true });
+    root.addEventListener('mouseleave', () => field.clearPointer());
+    window.addEventListener('touchend', () => field.clearPointer());
+
+    // void から離れたときと入口画面に戻ったときは止めてボタンをオフに戻す
+    new MutationObserver(() => {
+      if (root.dataset.theme !== 'void' || root.dataset.gate !== 'closed') stopAll();
+    }).observe(root, { attributes: true, attributeFilter: ['data-theme', 'data-gate'] });
+
+    new ResizeObserver(() => { if (raf) resize(); }).observe(canvas);
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      } else {
+        start();
+      }
+    });
+  }
+</script>
